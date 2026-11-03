@@ -1,0 +1,3 @@
+voice/*.js -diff linguist-generated=true
+app/*.js -diff linguist-vendored=true
+app/fonts.css -diff linguist-vendored=true
