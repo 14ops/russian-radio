@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net/npm/@3sln/; worker-src 'self' file: blob:; connect-src 'self' file: https://api.anthropic.com http://localhost:* http://127.0.0.1:*; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data: blob:; media-src 'self' file: data: blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net/npm/@3sln/; worker-src 'self' file: blob:; connect-src 'self' file: data: https://api.anthropic.com http://localhost:* http://127.0.0.1:*; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data: blob:; media-src 'self' file: data: blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Povtori FM</title>
@@ -324,7 +324,7 @@ details.paste summary{cursor:pointer;font-weight:600;font-size:13.5px}
           <div class="writer" id="writerBox">
             <h3>Writer<small>Who writes new episodes</small></h3>
             <div class="set-grid">
-              <label class="field">Writer<select id="wKind"><option value="claude">Claude, with your API key (online)</option><option value="ollama">Ollama on this computer (offline)</option><option value="tapes">Built-in episodes only (offline)</option></select></label>
+              <label class="field">Writer<select id="wKind"><option value="mini">Mini AI on this computer (offline, free, tiny)</option><option value="claude">Claude, with your API key (online)</option><option value="ollama">Ollama on this computer (offline)</option><option value="tapes">Built-in episodes only (offline)</option></select></label>
               <label class="field" data-w="claude">Claude API key<input id="wKey" type="password" autocomplete="off" spellcheck="false" data-lpignore="true" data-1p-ignore placeholder="sk-ant-..."></label>
               <label class="field" data-w="claude">Claude model<input id="wModel" autocomplete="off"></label>
               <label class="field" data-w="ollama">Ollama address<input id="wOllamaUrl" autocomplete="off"></label>
@@ -631,7 +631,7 @@ const LS = {
   set(k, v) { try { localStorage.setItem('povtori:' + k, JSON.stringify(v)); } catch (e) {} },
   del(k) { try { localStorage.removeItem('povtori:' + k); } catch (e) {} },
 };
-const SET = Object.assign({ mode: 'talk', speed: 1, enText: true, enVoice: false, stress: true, autoGame: true, gap: 'normal', vN: '', vT: '', vEN: '', vET: '', tab: 'inbox', engine: 'ai', aN: '', aT: '', writer: 'tapes', claudeModel: 'claude-opus-5-5', ollamaUrl: 'http://localhost:11434', ollamaModel: 'qwen2.5:7b' }, LS.get('settings', {}) || {});
+const SET = Object.assign({ mode: 'talk', speed: 1, enText: true, enVoice: false, stress: true, autoGame: true, gap: 'normal', vN: '', vT: '', vEN: '', vET: '', tab: 'inbox', engine: 'ai', aN: '', aT: '', writer: 'mini', claudeModel: 'claude-opus-5-5', ollamaUrl: 'http://localhost:11434', ollamaModel: 'qwen2.5:7b' }, LS.get('settings', {}) || {});
 const saveSet = () => LS.set('settings', SET);
 
 const defaultStory = () => ({ id: 'masha', title: 'Ма́ша и Бори́с', premise: 'Masha, a student who just moved to Moscow, lives with Boris, her big ginger cat who loves milk and fish. Small everyday adventures: café, metro, market, weather, friends, food, and the neighbor’s dog.', episode: 0, recaps: [], words: [], requests: [] });
@@ -1885,11 +1885,11 @@ const Gen = {
     this.label = KINDS[kind] ? KINDS[kind].en.toLowerCase() : kind; this.lines = 0;
     let lastPaint = 0;
     try {
-      const data = await sample.json(Prompts[kind](payload), { signal: ctl.signal, cache: false, modelTier: 'default', onText: ({ text }) => {
+      const data = Writer.kind() === 'mini' ? null : await sample.json(Prompts[kind](payload), { signal: ctl.signal, cache: false, modelTier: 'default', onText: ({ text }) => {
         this.lines = (text.match(/"(?:ru|en)"\s*:/g) || []).length;
         const now = performance.now(); if (now - lastPaint > 400) { lastPaint = now; UI.status(); }
       } });
-      const seg = Parse[kind](data, payload);
+      const seg = Writer.kind() === 'mini' ? await MiniAI.make(kind, payload, ctl.signal) : Parse[kind](data, payload);
       if (!seg) throw { code: 'invalid_json' };
       this.fails = 0;
       return seg;
@@ -1899,6 +1899,7 @@ const Gen = {
     }
   },
   async ask(prompt, opts = {}) {
+    if (Writer.kind() === 'mini') throw { code: 'unsupported', message: 'The mini AI only writes episodes and drills.' };
     const s = await this.get();
     if (!s) throw { code: 'not_available' };
     if (this.paused) throw { code: this.paused };
@@ -1911,10 +1912,12 @@ const Gen = {
   },
   fail(e) {
     const code = (e && e.code) || 'upstream_error';
-    if (code === 'cancelled') return;
+    if (code === 'cancelled' || code === 'unsupported') return;
+    if (code === 'invalid_json' && Writer.kind() === 'mini') { UI.status(); return; }
+    if (code === 'mini_failed') PAUSE_MSG.mini_failed = 'The mini AI could not start: ' + ((e && e.message) || 'unknown error') + ' Playing built-in episodes and reruns.';
     if (code !== 'not_available') console.warn('Povtori: Claude call failed', code, e && e.message);
     this.fails++;
-    const hard = ['offline', 'not_granted', 'sampling_disabled', 'not_declared', 'capability_disabled', 'capability_removed', 'rate_limited', 'session_expired', 'not_available', 'prompt_too_large', 'invalid_request', 'transform_error'];
+    const hard = ['mini_failed', 'offline', 'not_granted', 'sampling_disabled', 'not_declared', 'capability_disabled', 'capability_removed', 'rate_limited', 'session_expired', 'not_available', 'prompt_too_large', 'invalid_request', 'transform_error'];
     if (hard.includes(code) || this.fails >= 2) { this.paused = code; this.cancelAll(); }
     UI.status();
   },
@@ -1928,7 +1931,7 @@ const Plan = {
     for (let k = 0; k < this.cycle.length; k++) {
       const kind = this.cycle[(D.rot + k) % this.cycle.length];
       if (kind === 'words' && DATA.vocab.length < 2 && DATA.story.words.length < 4) continue;
-      if (kind === 'doc' && !DATA.docs.length) continue;
+      if (kind === 'doc' && (!DATA.docs.length || Writer.kind() === 'mini')) continue;
       if (kind === 'game' && (!SET.autoGame || Game.active)) continue;
       D.rot = (D.rot + k + 1) % this.cycle.length;
       return { kind, payload: {} };
@@ -1946,11 +1949,13 @@ const Inbox = {
     DATA.inbox.unshift({ id: newId(), q: q.slice(0, 600), ts: Date.now(), status: 'queued' });
     this.save(); UI.inbox();
     if (S.playing) D.insertNow(ackItems('inbox'), 'inbox');
-    if (!Gen.available()) UI.note('#askNote', Writer.usable() ? 'Saved. It airs once the writer is reachable again.' : 'Saved. Answers need a writer. Set one up in settings.');
+    if (Writer.kind() === 'mini') UI.note('#askNote', 'Saved. The mini AI only writes story and drills. Switch the writer to Claude or Ollama for answers.');
+    else if (!Gen.available()) UI.note('#askNote', Writer.usable() ? 'Saved. It airs once the writer is reachable again.' : 'Saved. Answers need a writer. Set one up in settings.');
     else UI.note('#askNote', 'Sent. The hosts are writing the answer.');
     this.process();
   },
   async process() {
+    if (Writer.kind() === 'mini') return;
     if (this.busy || !Gen.available()) return;
     const item = DATA.inbox.slice().reverse().find((x) => x.status === 'queued');
     if (!item) return;
@@ -2097,6 +2102,7 @@ async function requestNext(kind, payload) {
   payload = payload || {};
   if (kind === 'words' && DATA.vocab.length < 2 && DATA.story.words.length < 4) { UI.tab('words'); UI.toast('Add at least two words first.'); return; }
   if (kind === 'doc' && !DATA.docs.length) { UI.tab('docs'); UI.toast('Add a doc first. The hosts teach from it.'); return; }
+  if (kind === 'doc' && Writer.kind() === 'mini') { UI.toast('The mini AI only writes story and drills. Docs need Claude or Ollama.'); return; }
   if (!Gen.available()) {
     if (kind === 'words') { D.ready.unshift(cloneSeg(OFF.count)); UI.toast('Live hosts are offline. Playing a saved drill next.'); }
     else UI.toast('That needs the live hosts. Reconnect them first.');
@@ -2497,8 +2503,8 @@ const Writer = {
   client: null, clientKey: '',
   kind() { return SET.writer || 'tapes'; },
   key() { return KEY_MEM || (SET.rememberKey ? String(LS.get('apiKey', '') || '') : ''); },
-  usable() { const k = this.kind(); return (k === 'claude' && !!this.key() && typeof window.Anthropic === 'function') || (k === 'ollama' && !!SET.ollamaModel); },
-  short() { return this.kind() === 'ollama' ? 'Ollama' : 'Claude'; },
+  usable() { const k = this.kind(); return (k === 'mini' && MiniAI.state !== 'failed') || (k === 'claude' && !!this.key() && typeof window.Anthropic === 'function') || (k === 'ollama' && !!SET.ollamaModel); },
+  short() { const k = this.kind(); return k === 'mini' ? 'The mini AI' : k === 'ollama' ? 'Ollama' : 'Claude'; },
   images() { return this.kind() === 'claude'; },
   claude() {
     const k = this.key();
@@ -2568,10 +2574,11 @@ function writerFields() {
   $$('[data-w]').forEach((el) => { el.hidden = el.dataset.w !== k; });
   $('#wHelp').textContent = k === 'claude' ? 'Get a key at console.anthropic.com. This page sends it only to api.anthropic.com, and its security policy blocks every other address. By default the key lives in memory and is gone when you close the tab. Tick Remember to keep it on this computer. Tip: make a separate key with a spend limit for this. Needs internet.'
     : k === 'ollama' ? 'Install Ollama, run "ollama pull ' + ($('#wOllamaModel').value || 'qwen2.5:7b') + '", then start Ollama on this computer with OLLAMA_ORIGINS=* so this page can reach it. Works offline. Small models make more Russian mistakes than Claude.'
+    : k === 'mini' ? 'Gemma 3 270M runs right in this browser from the ai folder. Free and fully offline, but tiny: expect clumsy Russian and real mistakes. It writes story episodes and word drills. Questions, docs and ratings need Claude or Ollama.'
     : 'No writer. The radio plays the built-in episodes, games, drills and reruns, fully offline.';
 }
 function saveWriter() {
-  SET.writer = $('#wKind').value;
+  SET.writer = $('#wKind').value; SET.writerChosen = true;
   SET.claudeModel = $('#wModel').value.trim() || 'claude-opus-5-5';
   SET.ollamaUrl = $('#wOllamaUrl').value.trim() || 'http://localhost:11434';
   SET.ollamaModel = $('#wOllamaModel').value.trim() || 'qwen2.5:7b';
@@ -2590,6 +2597,7 @@ function forgetKey() {
   Gen.reset(); UI.footer();
   UI.note('#wNote', 'Key wiped from this page and this browser.');
 }
+function migrateWriter() { if (SET.writer === 'tapes' && !SET.writerChosen) { SET.writer = 'mini'; saveSet(); } }
 function migrateKey() {
   const old = String(LS.get('apiKey', '') || '');
   if (old && !SET.rememberKey) { KEY_MEM = old; LS.del('apiKey'); UI.toast('Your Claude key now stays for this visit only. Tick Remember in settings to keep it.'); }
@@ -2690,6 +2698,159 @@ const Rec = {
   },
 };
 
+/* ---------- mini AI: Gemma 3 270M running in this browser (wllama = llama.cpp in WebAssembly) ---------- */
+function b64bytes(s) {
+  if (Uint8Array.fromBase64) return Uint8Array.fromBase64(s);
+  const bin = atob(s), out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+function explainMini(e) {
+  const m = String((e && e.message) || e || '');
+  if (/missing|damaged/i.test(m)) return 'the ai folder is missing or incomplete. Keep it next to Povtori FM.html.';
+  if (/SIMD|exception handling/i.test(m)) return 'this browser is too old for it. Use a current Chrome, Edge or Firefox.';
+  if (/memory|allocat/i.test(m)) return 'this computer ran out of memory for it.';
+  if (/WebAssembly|wasm|unsafe-eval/i.test(m)) return 'this browser blocked WebAssembly.';
+  return (m.slice(0, 140) || 'unknown error') + '.';
+}
+const MINI_GRAMMAR = (n) => 'root ::= ' + Array(n).fill('line').join(' ') + '\nline ::= who ": " ru " | " en "\\n"\nwho ::= "N" | "T"\nru ::= rw (" " rw){0,7} [.!?]\nrw ::= [а-яА-ЯёЁ]+ ","?\nen ::= ew (" " ew){0,11} [.!?]\new ::= [A-Za-z\']+ ","?';
+const MINI_HEAD = 'Povtori FM is a radio show in very simple Russian for beginners. Nika (N) and Tyoma (T) tell a story in short sentences. Every line is Russian, then | and the English translation.\n\n';
+const MINI_CAFE = [L('N', 'Маша идёт в кафе.', 'Masha goes to a café.'), L('T', 'Она хочет кофе.', 'She wants coffee.'), L('N', 'Кофе, пожалуйста!', 'Coffee, please!'), L('T', 'Сколько стоит?', 'How much is it?'), L('N', 'Сто рублей.', 'One hundred rubles.'), L('T', 'Спасибо! Очень вкусно.', 'Thank you! Very tasty.'), L('N', 'А Борис дома. Он спит.', 'And Boris is at home. He is sleeping.')];
+const MINI_WORDS = 'Word: кошка | cat\nN: Кошка. | A cat.\nT: Это моя кошка. | This is my cat.\nN: Кошка спит. | The cat is sleeping.\nT: Кошка любит молоко. | The cat loves milk.\n###\n\nWord: кофе | coffee\nN: Кофе. | Coffee.\nT: Я пью кофе. | I drink coffee.\nN: Кофе горячий. | The coffee is hot.\nT: Ты хочешь кофе? | Do you want coffee?\n###\n\n';
+const miniEp = (title, lines, words) => 'Episode: ' + stripStress(title) + '\n' + (words ? 'Words: ' + words + '\n' : '') +
+  lines.filter((l) => l.lang !== 'en' && l.ru).slice(0, 12).map((l) => (l.who === 'T' ? 'T' : 'N') + ': ' + stripStress(l.ru) + ' | ' + l.en).join('\n') + '\n###\n\n';
+function miniLines(text, max) {
+  const out = [], seen = new Set();
+  for (const raw of String(text).split('\n')) {
+    const line = raw.trim();
+    if (/^(###|Episode\b|Word:)/.test(line)) break;
+    const m = line.match(/^([NT])\s*:\s*(.+?)\s*\|\s*(.+?)\s*$/);
+    if (!m) continue;
+    const who = m[1], ru = m[2].replace(/\s+/g, ' '), en = m[3].replace(/\s+/g, ' ');
+    if (!/[Ѐ-ӿ]/.test(ru) || /[A-Za-z]{3,}/.test(ru.replace(/\bFM\b/g, ''))) continue;
+    if (!/[A-Za-z]/.test(en) || /[Ѐ-ӿ]/.test(en)) continue;
+    if (ru.length < 2 || ru.length > 90 || en.length > 140 || ru.split(' ').length > 10 || en.split(' ').length > 18) continue;
+    const k = norm(ru);
+    if (!k || seen.has(k)) continue;
+    seen.add(k); out.push({ who, ru, en });
+    if (out.length >= max) break;
+  }
+  return out;
+}
+function miniRepeats(lines) {
+  let last = -3, n = 0;
+  lines.forEach((l, i) => { const w = l.ru.split(' ').length; if (n < 3 && i - last >= 3 && w >= 1 && w <= 5) { l.repeat = true; last = i; n++; } });
+  return lines;
+}
+const MiniAI = {
+  state: 'off', progress: 0, error: '', wl: null, loading: null, gpu: false, q: Promise.resolve(),
+  ensure() {
+    if (this.wl) return Promise.resolve(this.wl);
+    if (!this.loading) this.loading = this.load().catch((e) => {
+      this.loading = null; this.state = 'failed'; this.error = explainMini(e); UI.status();
+      throw { code: 'mini_failed', message: this.error };
+    });
+    return this.loading;
+  },
+  async load() {
+    this.state = 'loading'; this.progress = 0; UI.status();
+    for (let i = 0; i < 240 && ['loading', 'tuning'].includes(AIV.state); i++) await sleep(500);
+    if (!self.__aiManifest) await loadLocal('ai/manifest.js');
+    if (!self.Wllama) await loadLocal('ai/wllama.js');
+    const m = self.__aiManifest, parts = [];
+    for (let i = 0; i < m.parts.length; i++) {
+      const key = m.parts[i];
+      await loadLocal('ai/' + key + '.js');
+      const s = self.__aic && self.__aic[key];
+      if (!s) throw new Error('model file ' + key + ' is missing');
+      delete self.__aic[key];
+      parts.push(b64bytes(s));
+      this.progress = ((i + 1) / m.parts.length) * 0.85; UI.status();
+    }
+    const file = new File(parts, m.file);
+    parts.length = 0;
+    if (file.size !== m.size) throw new Error('the model files are damaged');
+    if (!self.__aiWasm) await loadLocal('ai/wllama-wasm.js');
+    const wasm = 'data:application/wasm;base64,' + self.__aiWasm;
+    const logger = { debug() {}, log() {}, info() {}, warn() {}, error: (...a) => console.warn('mini AI:', ...a) };
+    let lastErr = null;
+    for (const gpu of [true, false]) {
+      try {
+        const wl = new self.Wllama({ default: wasm }, { suppressNativeLog: true, logger });
+        await wl.loadModel([file], gpu ? { n_ctx: 2048, n_threads: 1 } : { n_ctx: 2048, n_threads: 1, n_gpu_layers: 0 });
+        this.wl = wl; this.gpu = gpu; break;
+      } catch (e) {
+        lastErr = e; console.warn('mini AI: load ' + (gpu ? 'with' : 'without') + ' WebGPU failed', e);
+        if (/memory|allocat/i.test(String((e && e.message) || e))) break;
+      }
+    }
+    if (!this.wl) throw lastErr || new Error('the engine did not start');
+    delete self.__aiWasm;
+    this.state = 'ready'; this.progress = 1; UI.status();
+    return this.wl;
+  },
+  complete(prompt, opt = {}) {
+    const run = this.q.then(async () => {
+      const wl = await this.ensure();
+      if (opt.signal && opt.signal.aborted) throw { code: 'cancelled' };
+      const res = await wl.createCompletion({ prompt, max_tokens: opt.max || 300, temperature: opt.temp || 0.7, top_p: 0.9, top_k: 30, min_p: 0.08, repeat_penalty: 1.1, stop: opt.stop || ['###'], grammar: opt.grammar, seed: Math.floor(Math.random() * 1e9), abortSignal: opt.signal });
+      const c = res && res.choices && res.choices[0];
+      return String((c && (c.text != null ? c.text : c.message && c.message.content)) || (typeof res === 'string' ? res : ''));
+    });
+    this.q = run.catch(() => {});
+    return run;
+  },
+  pickWords(max) {
+    const mine = DATA.vocab.filter((w) => isCyr(w.ru || w.term)).sort((a, b) => (a.uses || 0) - (b.uses || 0)).slice(0, max)
+      .map((w) => ({ term: w.term, ru: stripStress(w.ru || w.term), en: w.en || '' }));
+    if (mine.length) return mine;
+    return DATA.story.words.slice(-12).sort(() => Math.random() - 0.5).slice(0, max).map((w) => ({ term: w.ru, ru: stripStress(w.ru), en: w.en || '' }));
+  },
+  async make(kind, p, signal) {
+    if (kind === 'game') {
+      const used = DATA.game.used, pool = OFF_GAMES.filter((g) => !used.includes(norm(stripStress(g.game.answer.ru))));
+      return Object.assign(cloneSeg(pick(pool.length ? pool : OFF_GAMES)), { offline: true });
+    }
+    if (kind === 'words') return this.words(signal);
+    if (kind === 'story' || kind === 'doc') return this.story(p && p.n ? p : { n: nextEp(), storyId: DATA.story.id }, signal);
+    return null;
+  },
+  async story(p, signal) {
+    const prev = DATA.archive.find((a) => a.kind === 'story' && a.lines && a.lines.length);
+    const words = this.pickWords(2).map((w) => w.ru);
+    const topic = words.length ? 'Маша и ' + words[0] : pick(['Новый день', 'Маша в городе', 'Борис дома', 'Маша и друг', 'Дождь']);
+    const prompt = MINI_HEAD + miniEp(OFF.ep1.title.replace(/^.*?\.\s*/, ''), OFF.ep1.lines, 'кот, молоко, рыба') + miniEp('Маша в кафе', MINI_CAFE, 'кафе, кофе') +
+      (prev ? miniEp(String(prev.title || '').replace(/^.*?\.\s*/, ''), prev.lines) : '') + 'Episode: ' + topic + '\n' + (words.length ? 'Words: ' + words.join(', ') + '\n' : '');
+    const lines = [], seen = new Set();
+    let text = '';
+    for (let round = 0; round < 2 && lines.length < 9; round++) {
+      const out = await this.complete(prompt + text, { max: 260, grammar: MINI_GRAMMAR(round ? 4 : 6), signal });
+      this.trace = (this.trace || []).concat([out]).slice(-8);
+      const fresh = miniLines(out, 10).filter((l) => { const k = norm(l.ru); if (seen.has(k)) return false; seen.add(k); return true; });
+      if (!fresh.length) break;
+      lines.push(...fresh);
+      text += out.endsWith('\n') ? out : out + '\n';
+    }
+    if (lines.length < 3) return null;
+    miniRepeats(lines);
+    const all = [L('N', 'Но́вый эпизо́д!', 'New episode!'), ...lines, L('T', 'Слу́шай да́льше!', 'Keep listening!')];
+    return { kind: 'story', title: 'Эпизо́д ' + p.n + '. ' + topic, lines: all, mini: true, meta: { episode: p.n, storyId: p.storyId || DATA.story.id, recap: lines.slice(0, 3).map((l) => l.en).join(' '), newWords: [], used: words } };
+  },
+  async words(signal) {
+    const ws = this.pickWords(3).filter((w) => w.en);
+    if (!ws.length) return this.story({ n: nextEp(), storyId: DATA.story.id }, signal);
+    const lines = [L('N', 'Твои́ слова́! Слу́шай и повторя́й.', 'Your words! Listen and repeat.')];
+    for (const w of ws) {
+      const out = await this.complete(MINI_HEAD + MINI_WORDS + 'Word: ' + w.ru + ' | ' + w.en + '\n', { max: 120, grammar: MINI_GRAMMAR(3), signal });
+      const got = miniLines(out, 5);
+      if (got.length) { got[0].repeat = true; lines.push(...got); }
+    }
+    if (lines.length < 3) return null;
+    lines.push(L('T', 'Молоде́ц!', 'Well done!'));
+    return { kind: 'words', title: 'Слова́: ' + ws.map((w) => w.ru).join(', '), lines, mini: true, meta: { used: ws.map((w) => w.term), gloss: [] } };
+  },
+};
+
 /* ---------- UI ---------- */
 const ICON = {
   play: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>',
@@ -2720,7 +2881,7 @@ const UI = {
     $('#readout').textContent = k.f.toFixed(1).replace('.', ',') + ' МГц';
     $('#segKind').textContent = k.ru;
     $('#segTitle').innerHTML = renderRu(seg.title || '', { words: false }).html;
-    $('#segSrc').textContent = seg.rerun ? 'rerun' : seg.offline ? 'studio tape' : 'live · written by Claude';
+    $('#segSrc').textContent = seg.rerun ? 'rerun' : seg.mini ? 'mini AI · may contain mistakes' : seg.offline ? 'studio tape' : 'live · written by ' + (Writer.kind() === 'ollama' ? 'Ollama' : 'Claude');
   },
   playing(on) {
     $('#icPlay').toggleAttribute('hidden', on); $('#icPause').toggleAttribute('hidden', !on);
@@ -2772,6 +2933,7 @@ const UI = {
     if (!Gen.ready) msg = 'Connecting to the studio…';
     else if (!Gen.sample) { tone = 'warn'; msg = PAUSE_MSG.not_available; b = ['Set up writer', openSettings]; }
     else if (Gen.paused) { tone = 'warn'; msg = PAUSE_MSG[Gen.paused] || 'The hosts lost the script. Playing studio tapes until you reconnect them.'; b = ['not_granted', 'invalid_request'].includes(Gen.paused) ? ['Fix in settings', openSettings] : ['Reconnect hosts', () => Gen.resume()]; }
+    else if (Writer.kind() === 'mini' && MiniAI.state === 'loading') { tone = 'busy'; msg = 'Loading the mini AI from the ai folder: ' + Math.round(MiniAI.progress * 100) + '%. Built-in episodes play meanwhile.'; }
     else if (Gen.inFlight()) { tone = 'busy'; msg = Writer.short() + ' is writing the next ' + (Gen.label || 'segment') + (Gen.lines ? ': ' + Gen.lines + ' lines so far' : '') + '…'; }
     else if (D.ready.length) { tone = 'ok'; msg = 'Up next: ' + stripStress(D.ready[0].title || ''); }
     else if (!S.started) msg = 'Press Слушать. ' + Writer.short() + ' writes new episodes while you listen.';
@@ -3020,6 +3182,7 @@ async function boot() {
   UI.line({ who: 'N', ru: 'Нажми́ «Слу́шать» и повторя́й.', en: 'Press Listen, then repeat after the hosts.' });
   UI.inbox(); UI.vocab(); UI.docs(); UI.game(); UI.story(); UI.footer(); UI.preview();
   UI.tab(SET.tab || 'inbox', false, true);
+  migrateWriter();
   migrateKey();
   writerUI();
   bind(); UI.status(); UI.aiv(); UI.aivSelects();

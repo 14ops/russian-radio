@@ -7,12 +7,13 @@ START
    Chrome or Edge work best. Firefox works too.
 3. Press Слушать (Listen).
 
-Keep the app and voice folders next to "Povtori FM.html". The page loads them from there.
+Keep the app, voice and ai folders next to "Povtori FM.html". The page loads them from there.
 
 
 WHAT RUNS OFFLINE
 - The radio, built-in episodes, games, word drills and reruns
 - AI voices for Nika and Tyoma (Supertonic 3, loaded from the voice folder)
+- A mini AI that writes new story episodes and word drills (Gemma 3 270M, loaded from the ai folder)
 - Your words, docs (txt, md, pdf, docx), questions and story notes
 - Recording yourself and the voice score (pitch, pace, pauses, syllables)
 
@@ -20,7 +21,15 @@ WHAT RUNS OFFLINE
 WHO WRITES NEW EPISODES (Settings, the Голоса button)
 Pick one:
 
-A) Claude with your API key (needs internet)
+A) Mini AI on this computer (offline, free, the default)
+   - Gemma 3 270M runs inside the browser from the ai folder. No setup, no account, no internet.
+   - The first episode takes a while: the model loads (about 250 MB) and then writes.
+     Built-in episodes play while it works. A computer with a decent graphics chip is much faster.
+   - It is tiny. Expect clumsy, sometimes wrong Russian and translations that miss.
+     Good for listening practice and laughs, not as a grammar reference.
+   - It writes story episodes and word drills. Questions, docs and voice ratings need Claude or Ollama.
+
+B) Claude with your API key (needs internet)
    - Get a key at console.anthropic.com
    - Paste it in Settings, Writer, then press Test writer
    - The default model is filled in. Change it in Settings if you want.
@@ -29,7 +38,7 @@ A) Claude with your API key (needs internet)
      Tick "Remember the key on this computer" to keep it. "Forget key" wipes it.
    - Tip: make a separate key with a spend limit for this app. Each segment uses a little API credit.
 
-B) Ollama on this computer (offline)
+C) Ollama on this computer (offline)
    - Install Ollama from ollama.com
    - In a terminal: ollama pull qwen2.5:7b
    - Quit Ollama, then start it so this page is allowed to talk to it:
@@ -38,7 +47,7 @@ B) Ollama on this computer (offline)
    - In Settings pick Ollama, keep http://localhost:11434, press Test writer
    - Small models make more Russian grammar mistakes than Claude.
 
-C) Built-in episodes only (offline). No setup.
+D) Built-in episodes only (offline). No setup.
 
 
 VOICES
@@ -61,6 +70,8 @@ Open the page in a different browser or computer and you start fresh.
 
 CREDITS AND LICENSES (see the LICENSES folder)
 - Supertonic 3 voice model by Supertone (OpenRAIL-M)
+- Gemma 3 270M by Google, provided under the Gemma Terms of Use (copy in LICENSES)
+- wllama, llama.cpp in WebAssembly (MIT)
 - sherpa-onnx runtime (Apache 2.0), packaged by @3sln/donki-lle (MIT)
 - Anthropic TypeScript SDK (MIT), pdf.js (Apache 2.0), mammoth (BSD 2)
 - Fonts: Golos Text, Unbounded, JetBrains Mono (SIL Open Font License)

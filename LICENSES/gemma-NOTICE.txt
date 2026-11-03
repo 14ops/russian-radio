@@ -1,0 +1,6 @@
+Gemma is provided under and subject to the Gemma Terms of Use found at ai.google.dev/gemma/terms
+(copy included: gemma-terms-of-use.html).
+
+The ai/ folder holds gemma-3-270m-q4_k_m.gguf (GGUF conversion of google/gemma-3-270m),
+split into script chunks so it loads from a plain folder. sha256 of the full file:
+a5fd3b62230aa5ec60212297dc9d20eaa70578ac519e00d93a17e44c087a6818
