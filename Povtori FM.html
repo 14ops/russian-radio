@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' file: 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net/npm/@3sln/; worker-src 'self' file: blob:; connect-src 'self' file: https://api.anthropic.com http://localhost:* http://127.0.0.1:*; style-src 'self' file: 'unsafe-inline'; font-src 'self' file: data:; img-src 'self' file: data: blob:; media-src 'self' file: data: blob:; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Povtori FM</title>
 <link rel="stylesheet" href="app/fonts.css">
@@ -323,11 +325,12 @@ details.paste summary{cursor:pointer;font-weight:600;font-size:13.5px}
             <h3>Writer<small>Who writes new episodes</small></h3>
             <div class="set-grid">
               <label class="field">Writer<select id="wKind"><option value="claude">Claude, with your API key (online)</option><option value="ollama">Ollama on this computer (offline)</option><option value="tapes">Built-in episodes only (offline)</option></select></label>
-              <label class="field" data-w="claude">Claude API key<input id="wKey" type="password" autocomplete="off" placeholder="sk-ant-..."></label>
+              <label class="field" data-w="claude">Claude API key<input id="wKey" type="password" autocomplete="off" spellcheck="false" data-lpignore="true" data-1p-ignore placeholder="sk-ant-..."></label>
               <label class="field" data-w="claude">Claude model<input id="wModel" autocomplete="off"></label>
               <label class="field" data-w="ollama">Ollama address<input id="wOllamaUrl" autocomplete="off"></label>
               <label class="field" data-w="ollama">Ollama model<input id="wOllamaModel" autocomplete="off" placeholder="qwen2.5:7b"></label>
             </div>
+            <div class="checks" data-w="claude"><label class="check"><input type="checkbox" id="wRemember"> Remember the key on this computer</label><button type="button" class="btn small ghost" id="wForget">Forget key</button></div>
             <div class="row"><button type="button" class="btn small" id="wSave">Save writer</button><button type="button" class="btn small ghost" id="wTest">Test writer</button><span class="fine" id="wNote"></span></div>
             <p class="fine" id="wHelp"></p>
           </div>
@@ -1157,7 +1160,7 @@ function makeWorkerHost(prefix) {
     ' else if (op === "calibrate") result = host.calibrate(args);' +
     ' self.postMessage({ id, result }, tr); } catch (err) { self.postMessage({ id, error: String((err && err.message) || err) }); } };';
   const url = URL.createObjectURL(new Blob([src], { type: 'text/javascript' }));
-  const w = new Worker(url, { type: 'module' });
+  const w = new Worker(url);
   let seq = 0, dead = null;
   const pending = new Map();
   const die = (msg) => { dead = new Error(msg); for (const p of pending.values()) p.reject(dead); pending.clear(); try { w.terminate(); } catch (e) {} };
@@ -2489,10 +2492,11 @@ async function toJpegB64(blob) {
   const data = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] || ''); r.onerror = () => rej(new Error('Could not read the image.')); r.readAsDataURL(src); });
   return { data, type: /^image\/(jpeg|png|gif|webp)$/.test(src.type) ? src.type : 'image/jpeg' };
 }
+let KEY_MEM = '';
 const Writer = {
   client: null, clientKey: '',
   kind() { return SET.writer || 'tapes'; },
-  key() { return String(LS.get('apiKey', '') || ''); },
+  key() { return KEY_MEM || (SET.rememberKey ? String(LS.get('apiKey', '') || '') : ''); },
   usable() { const k = this.kind(); return (k === 'claude' && !!this.key() && typeof window.Anthropic === 'function') || (k === 'ollama' && !!SET.ollamaModel); },
   short() { return this.kind() === 'ollama' ? 'Ollama' : 'Claude'; },
   images() { return this.kind() === 'claude'; },
@@ -2553,6 +2557,7 @@ function openSettings() { const p = $('#settings'); p.hidden = false; $('#setBtn
 function writerUI() {
   $('#wKind').value = Writer.kind();
   $('#wKey').value = Writer.key();
+  $('#wRemember').checked = !!SET.rememberKey;
   $('#wModel').value = SET.claudeModel || 'claude-opus-5-5';
   $('#wOllamaUrl').value = SET.ollamaUrl || 'http://localhost:11434';
   $('#wOllamaModel').value = SET.ollamaModel || 'qwen2.5:7b';
@@ -2561,8 +2566,8 @@ function writerUI() {
 function writerFields() {
   const k = $('#wKind').value;
   $$('[data-w]').forEach((el) => { el.hidden = el.dataset.w !== k; });
-  $('#wHelp').textContent = k === 'claude' ? 'Get a key at console.anthropic.com. It stays in this browser on this computer and goes only to api.anthropic.com. Each segment uses a little API credit. Needs internet.'
-    : k === 'ollama' ? 'Install Ollama, run "ollama pull ' + ($('#wOllamaModel').value || 'qwen2.5:7b') + '", then start Ollama with OLLAMA_ORIGINS=* so this page can reach it. Works offline. Small models make more Russian mistakes than Claude.'
+  $('#wHelp').textContent = k === 'claude' ? 'Get a key at console.anthropic.com. This page sends it only to api.anthropic.com, and its security policy blocks every other address. By default the key lives in memory and is gone when you close the tab. Tick Remember to keep it on this computer. Tip: make a separate key with a spend limit for this. Needs internet.'
+    : k === 'ollama' ? 'Install Ollama, run "ollama pull ' + ($('#wOllamaModel').value || 'qwen2.5:7b') + '", then start Ollama on this computer with OLLAMA_ORIGINS=* so this page can reach it. Works offline. Small models make more Russian mistakes than Claude.'
     : 'No writer. The radio plays the built-in episodes, games, drills and reruns, fully offline.';
 }
 function saveWriter() {
@@ -2570,8 +2575,24 @@ function saveWriter() {
   SET.claudeModel = $('#wModel').value.trim() || 'claude-opus-5-5';
   SET.ollamaUrl = $('#wOllamaUrl').value.trim() || 'http://localhost:11434';
   SET.ollamaModel = $('#wOllamaModel').value.trim() || 'qwen2.5:7b';
-  saveSet(); LS.set('apiKey', $('#wKey').value.trim());
+  KEY_MEM = $('#wKey').value.trim();
+  SET.rememberKey = $('#wRemember').checked;
+  saveSet();
+  if (SET.rememberKey && KEY_MEM) LS.set('apiKey', KEY_MEM); else LS.del('apiKey');
+  Writer.client = null; Writer.clientKey = '';
   Gen.reset(); UI.footer();
+}
+function forgetKey() {
+  KEY_MEM = ''; LS.del('apiKey');
+  SET.rememberKey = false; saveSet();
+  $('#wKey').value = ''; $('#wRemember').checked = false;
+  Writer.client = null; Writer.clientKey = '';
+  Gen.reset(); UI.footer();
+  UI.note('#wNote', 'Key wiped from this page and this browser.');
+}
+function migrateKey() {
+  const old = String(LS.get('apiKey', '') || '');
+  if (old && !SET.rememberKey) { KEY_MEM = old; LS.del('apiKey'); UI.toast('Your Claude key now stays for this visit only. Tick Remember in settings to keep it.'); }
 }
 async function testWriter() {
   saveWriter();
@@ -2804,7 +2825,7 @@ const UI = {
   en() { $('#enBtn').setAttribute('aria-pressed', String(SET.enText)); document.body.classList.toggle('no-en', !SET.enText); },
   footer() {
     $('#footText').textContent = (Writer.kind() === 'claude' ? 'New episodes are written by Claude with your API key. ' : Writer.kind() === 'ollama' ? 'New episodes are written by Ollama on this computer. ' : 'No writer set, so the radio plays built-in episodes. ') + (SET.engine === 'ai' ? 'Nika and Tyoma speak with Supertonic 3, a neural voice model that runs in this browser. ' : 'Voices come from your device. ') +
-      'Your words, docs, questions, story and API key are saved in this browser on this computer.';
+      'Your words, docs, questions and story are saved in this browser. Your API key stays in memory unless you tick Remember.';
   },
   tab(name, soft, init) {
     if (soft) { const a = document.activeElement; if (a && /INPUT|TEXTAREA|SELECT/.test(a.tagName) && !a.closest('#p-' + name)) return; }
@@ -2969,6 +2990,7 @@ function bind() {
   $('#wOllamaModel').addEventListener('input', writerFields);
   $('#wSave').addEventListener('click', () => { saveWriter(); UI.note('#wNote', Writer.usable() ? 'Saved.' : 'Saved. No writer active yet.'); });
   $('#wTest').addEventListener('click', testWriter);
+  $('#wForget').addEventListener('click', forgetKey);
   $('#vRec').addEventListener('click', () => { wake(); Rec.toggle(); });
   $('#optEnVoice').addEventListener('change', (e) => { SET.enVoice = e.target.checked; saveSet(); });
   $('#optStress').addEventListener('change', (e) => { SET.stress = e.target.checked; saveSet(); rerenderText(); });
@@ -2998,6 +3020,7 @@ async function boot() {
   UI.line({ who: 'N', ru: 'Нажми́ «Слу́шать» и повторя́й.', en: 'Press Listen, then repeat after the hosts.' });
   UI.inbox(); UI.vocab(); UI.docs(); UI.game(); UI.story(); UI.footer(); UI.preview();
   UI.tab(SET.tab || 'inbox', false, true);
+  migrateKey();
   writerUI();
   bind(); UI.status(); UI.aiv(); UI.aivSelects();
   Voice.init();

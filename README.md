@@ -22,11 +22,19 @@ Press **Слушать** to start.
 
 Pick a writer in Settings (the **Голоса** button):
 
-- **Claude** with your own API key from console.anthropic.com. Needs internet. The key stays in your browser and goes only to api.anthropic.com.
+- **Claude** with your own API key from console.anthropic.com. Needs internet. See [Your API key](#your-api-key).
 - **Ollama** on your computer. Offline. Start it with `OLLAMA_ORIGINS="*" ollama serve` so the page is allowed to reach it.
 - **Built-in episodes only.** No setup.
 
 Full instructions: [README.txt](README.txt).
+
+## Your API key
+
+- The key never goes in this repo. You type it into the app on your own device.
+- The app sends it only to `api.anthropic.com`. A Content Security Policy in `Povtori FM.html` blocks connections to any other address.
+- By default the key lives in memory and disappears when you close the tab. Tick **Remember the key on this computer** to keep it in browser storage. **Forget key** wipes it.
+- A remembered key sits in browser storage that other pages on the same origin share: every `14ops.github.io` site, or every HTML file Chrome opens from disk. Leave Remember off on shared computers.
+- Use a separate key with a spend limit for this app.
 
 ## Folder layout
 

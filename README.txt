@@ -24,8 +24,10 @@ A) Claude with your API key (needs internet)
    - Get a key at console.anthropic.com
    - Paste it in Settings, Writer, then press Test writer
    - The default model is filled in. Change it in Settings if you want.
-   - The key is saved in this browser on this computer and is sent only to api.anthropic.com.
-     Each segment uses a little API credit.
+   - The key goes only to api.anthropic.com. The page's security policy blocks every other address.
+   - By default the key lives in memory and is gone when you close the tab.
+     Tick "Remember the key on this computer" to keep it. "Forget key" wipes it.
+   - Tip: make a separate key with a spend limit for this app. Each segment uses a little API credit.
 
 B) Ollama on this computer (offline)
    - Install Ollama from ollama.com
@@ -53,6 +55,7 @@ RECORDING
 
 DATA
 Everything you add is stored in this browser's local storage on this computer.
+Your API key is not stored there unless you tick Remember.
 Open the page in a different browser or computer and you start fresh.
 
 
