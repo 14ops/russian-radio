@@ -24,6 +24,7 @@ Press **Слушать** to start.
 Pick a writer in Settings (the **Голоса** button):
 
 - **Mini AI** (default). Gemma 3 270M runs in the browser through wllama (llama.cpp in WebAssembly, WebGPU when available). Offline, free, no setup. It is tiny, so expect clumsy and sometimes wrong Russian. It writes story episodes and word drills. A grammar keeps every line in the `Russian | English` format.
+  - **Bigger model:** download a GGUF under 2 GB on your computer, for example [Qwen2.5 1.5B Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF) (`q4_k_m`, about 1.1 GB) or [Gemma 3 1B IT](https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF) (`Q4_K_M`, about 0.8 GB). In Settings pick **Use a bigger model file**. The browser keeps it, and **Back to built-in** undoes it.
 - **Claude** with your own API key from console.anthropic.com. Needs internet. See [Your API key](#your-api-key).
 - **Ollama** on your computer. Offline. Start it with `OLLAMA_ORIGINS="*" ollama serve` so the page is allowed to reach it.
 - **Built-in episodes only.** No setup.

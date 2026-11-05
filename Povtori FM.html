@@ -200,6 +200,7 @@ h3 small{font:500 10.5px var(--font-mono);letter-spacing:.08em;text-transform:up
 .btn{height:42px;padding:0 16px;border-radius:10px;border:1px solid var(--ink);background:var(--ink);color:var(--enamel);font-weight:600;font-size:14px;white-space:nowrap}
 .btn.ghost{background:transparent;color:var(--ink);border-color:var(--rule)}
 .btn.small{height:32px;padding:0 10px;font-size:12.5px}
+label.btn{display:inline-flex;align-items:center;cursor:pointer}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{border:1px dashed var(--rule);background:transparent;border-radius:999px;padding:5px 10px;font-size:12.5px;color:var(--ink)}
@@ -330,6 +331,7 @@ details.paste summary{cursor:pointer;font-weight:600;font-size:13.5px}
               <label class="field" data-w="ollama">Ollama address<input id="wOllamaUrl" autocomplete="off"></label>
               <label class="field" data-w="ollama">Ollama model<input id="wOllamaModel" autocomplete="off" placeholder="qwen2.5:7b"></label>
             </div>
+            <div class="row" data-w="mini"><span class="fine" id="miniModelName">Model: built-in Gemma 3 270M (tiny)</span><label class="btn small ghost" for="miniFile">Use a bigger model file</label><input type="file" id="miniFile" accept=".gguf" multiple hidden><button type="button" class="btn small ghost" id="miniReset" hidden>Back to built-in</button></div>
             <div class="checks" data-w="claude"><label class="check"><input type="checkbox" id="wRemember"> Remember the key on this computer</label><button type="button" class="btn small ghost" id="wForget">Forget key</button></div>
             <div class="row"><button type="button" class="btn small" id="wSave">Save writer</button><button type="button" class="btn small ghost" id="wTest">Test writer</button><span class="fine" id="wNote"></span></div>
             <p class="fine" id="wHelp"></p>
@@ -2504,7 +2506,7 @@ const Writer = {
   kind() { return SET.writer || 'tapes'; },
   key() { return KEY_MEM || (SET.rememberKey ? String(LS.get('apiKey', '') || '') : ''); },
   usable() { const k = this.kind(); return (k === 'mini' && MiniAI.state !== 'failed') || (k === 'claude' && !!this.key() && typeof window.Anthropic === 'function') || (k === 'ollama' && !!SET.ollamaModel); },
-  short() { const k = this.kind(); return k === 'mini' ? 'The mini AI' : k === 'ollama' ? 'Ollama' : 'Claude'; },
+  short() { const k = this.kind(); return k === 'mini' ? (MiniAI.custom ? MiniAI.custom.name : 'The mini AI') : k === 'ollama' ? 'Ollama' : 'Claude'; },
   images() { return this.kind() === 'claude'; },
   claude() {
     const k = this.key();
@@ -2559,6 +2561,24 @@ const Writer = {
     return (d && d.message && d.message.content) || '';
   },
 };
+async function pickMiniModel(list) {
+  const files = Array.from(list || []).filter((f) => /\.gguf$/i.test(f.name));
+  if (!files.length) { UI.note('#wNote', 'Pick a .gguf model file.'); return; }
+  if (files.some((f) => f.size > 2 * 1024 * 1024 * 1024)) { UI.note('#wNote', 'Each file has to be under 2 GB. Use a smaller quant, or a model split into parts.'); return; }
+  const name = (files.length > 1 ? files[0].name.replace(/-\d{5}-of-\d{5}\.gguf$/i, '') : files[0].name.replace(/\.gguf$/i, '')).slice(0, 80);
+  const size = files.reduce((n, f) => n + f.size, 0);
+  UI.note('#wNote', 'Saving ' + name + '…');
+  const saved = await ModelStore.put({ name, size, files });
+  MiniAI.custom = { name, size, files };
+  await MiniAI.reset(); Gen.reset(); UI.miniModel(); UI.footer();
+  UI.note('#wNote', (saved ? 'Saved in this browser. ' : 'Using it for this visit. The browser would not store it. ') + name + ' writes from the next episode.');
+}
+async function backToBuiltIn() {
+  await ModelStore.del();
+  MiniAI.custom = null;
+  await MiniAI.reset(); Gen.reset(); UI.miniModel(); UI.footer();
+  UI.note('#wNote', 'Back to the built-in Gemma 3 270M.');
+}
 function openSettings() { const p = $('#settings'); p.hidden = false; $('#setBtn').setAttribute('aria-expanded', 'true'); p.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
 function writerUI() {
   $('#wKind').value = Writer.kind();
@@ -2574,7 +2594,7 @@ function writerFields() {
   $$('[data-w]').forEach((el) => { el.hidden = el.dataset.w !== k; });
   $('#wHelp').textContent = k === 'claude' ? 'Get a key at console.anthropic.com. This page sends it only to api.anthropic.com, and its security policy blocks every other address. By default the key lives in memory and is gone when you close the tab. Tick Remember to keep it on this computer. Tip: make a separate key with a spend limit for this. Needs internet.'
     : k === 'ollama' ? 'Install Ollama, run "ollama pull ' + ($('#wOllamaModel').value || 'qwen2.5:7b') + '", then start Ollama on this computer with OLLAMA_ORIGINS=* so this page can reach it. Works offline. Small models make more Russian mistakes than Claude.'
-    : k === 'mini' ? 'Gemma 3 270M runs right in this browser from the ai folder. Free and fully offline, but tiny: expect clumsy Russian and real mistakes. It writes story episodes and word drills. Questions, docs and ratings need Claude or Ollama.'
+    : k === 'mini' ? 'A local model runs right in this browser. Free and fully offline. The built-in Gemma 3 270M is tiny, so expect clumsy Russian. For better Russian, download a bigger GGUF model (for example Qwen2.5 1.5B Instruct, the q4_k_m file, about 1.1 GB) and pick it with "Use a bigger model file". It writes story episodes and word drills. Questions, docs and ratings need Claude or Ollama.'
     : 'No writer. The radio plays the built-in episodes, games, drills and reruns, fully offline.';
 }
 function saveWriter() {
@@ -2711,7 +2731,7 @@ function explainMini(e) {
   if (/SIMD|exception handling/i.test(m)) return 'this browser is too old for it. Use a current Chrome, Edge or Firefox.';
   if (/memory|allocat/i.test(m)) return 'this computer ran out of memory for it.';
   if (/WebAssembly|wasm|unsafe-eval/i.test(m)) return 'this browser blocked WebAssembly.';
-  return (m.slice(0, 140) || 'unknown error') + '.';
+  return (m.slice(0, 140) || 'unknown error') + '.' + (MiniAI.custom ? ' Try another model file, or go back to the built-in one in settings.' : '');
 }
 const MINI_GRAMMAR = (n) => 'root ::= ' + Array(n).fill('line').join(' ') + '\nline ::= who ": " ru " | " en "\\n"\nwho ::= "N" | "T"\nru ::= rw (" " rw){0,7} [.!?]\nrw ::= [а-яА-ЯёЁ]+ ","?\nen ::= ew (" " ew){0,11} [.!?]\new ::= [A-Za-z\']+ ","?';
 const MINI_HEAD = 'Povtori FM is a radio show in very simple Russian for beginners. Nika (N) and Tyoma (T) tell a story in short sentences. Every line is Russian, then | and the English translation.\n\n';
@@ -2742,11 +2762,33 @@ function miniRepeats(lines) {
   lines.forEach((l, i) => { const w = l.ru.split(' ').length; if (n < 3 && i - last >= 3 && w >= 1 && w <= 5) { l.repeat = true; last = i; n++; } });
   return lines;
 }
+const ModelStore = {
+  open() {
+    return new Promise((res) => {
+      setTimeout(() => res(null), 4000);
+      try { const r = indexedDB.open('povtori-models', 1); r.onupgradeneeded = () => r.result.createObjectStore('files'); r.onsuccess = () => res(r.result); r.onerror = () => res(null); r.onblocked = () => res(null); }
+      catch (e) { res(null); }
+    });
+  },
+  async run(mode, fn) {
+    const db = await this.open();
+    if (!db) return undefined;
+    return new Promise((res) => {
+      try { const t = db.transaction('files', mode), q = fn(t.objectStore('files')); t.oncomplete = () => res(q && q.result !== undefined ? q.result : true); t.onerror = () => res(undefined); t.onabort = () => res(undefined); }
+      catch (e) { res(undefined); }
+    });
+  },
+  get() { return this.run('readonly', (st) => st.get('custom')).then((v) => (v && v !== true && Array.isArray(v.files) && v.files.length ? v : null)); },
+  put(v) { return this.run('readwrite', (st) => st.put(v, 'custom')).then((r) => r !== undefined); },
+  del() { return this.run('readwrite', (st) => st.delete('custom')); },
+};
 const MiniAI = {
-  state: 'off', progress: 0, error: '', wl: null, loading: null, gpu: false, q: Promise.resolve(),
+  state: 'off', progress: 0, error: '', wl: null, loading: null, gpu: false, q: Promise.resolve(), custom: null, modelName: 'Gemma 3 270M', gen: 0,
   ensure() {
     if (this.wl) return Promise.resolve(this.wl);
+    const g = this.gen;
     if (!this.loading) this.loading = this.load().catch((e) => {
+      if (g !== this.gen || (e && e.code === 'cancelled')) throw { code: 'cancelled' };
       this.loading = null; this.state = 'failed'; this.error = explainMini(e); UI.status();
       throw { code: 'mini_failed', message: this.error };
     });
@@ -2755,8 +2797,14 @@ const MiniAI = {
   async load() {
     this.state = 'loading'; this.progress = 0; UI.status();
     for (let i = 0; i < 240 && ['loading', 'tuning'].includes(AIV.state); i++) await sleep(500);
-    if (!self.__aiManifest) await loadLocal('ai/manifest.js');
+    const g = this.gen;
     if (!self.Wllama) await loadLocal('ai/wllama.js');
+    if (!this.custom) this.custom = await ModelStore.get();
+    let files = null;
+    if (this.custom) { files = this.custom.files; this.modelName = this.custom.name; this.progress = 0.85; UI.status(); }
+    else {
+    this.modelName = 'Gemma 3 270M';
+    if (!self.__aiManifest) await loadLocal('ai/manifest.js');
     const m = self.__aiManifest, parts = [];
     for (let i = 0; i < m.parts.length; i++) {
       const key = m.parts[i];
@@ -2770,6 +2818,8 @@ const MiniAI = {
     const file = new File(parts, m.file);
     parts.length = 0;
     if (file.size !== m.size) throw new Error('the model files are damaged');
+    files = [file];
+    }
     if (!self.__aiWasm) await loadLocal('ai/wllama-wasm.js');
     const wasm = 'data:application/wasm;base64,' + self.__aiWasm;
     const logger = { debug() {}, log() {}, info() {}, warn() {}, error: (...a) => console.warn('mini AI:', ...a) };
@@ -2777,17 +2827,24 @@ const MiniAI = {
     for (const gpu of [true, false]) {
       try {
         const wl = new self.Wllama({ default: wasm }, { suppressNativeLog: true, logger });
-        await wl.loadModel([file], gpu ? { n_ctx: 2048, n_threads: 1 } : { n_ctx: 2048, n_threads: 1, n_gpu_layers: 0 });
+        await wl.loadModel(files, gpu ? { n_ctx: 2048, n_threads: 1 } : { n_ctx: 2048, n_threads: 1, n_gpu_layers: 0 });
         this.wl = wl; this.gpu = gpu; break;
       } catch (e) {
         lastErr = e; console.warn('mini AI: load ' + (gpu ? 'with' : 'without') + ' WebGPU failed', e);
         if (/memory|allocat/i.test(String((e && e.message) || e))) break;
       }
     }
+    if (this.wl && g !== this.gen) { try { await this.wl.exit(); } catch (e) {} this.wl = null; throw { code: 'cancelled' }; }
     if (!this.wl) throw lastErr || new Error('the engine did not start');
     delete self.__aiWasm;
     this.state = 'ready'; this.progress = 1; UI.status();
     return this.wl;
+  },
+  async reset() {
+    this.gen++;
+    const wl = this.wl;
+    this.wl = null; this.loading = null; this.state = 'off'; this.progress = 0; this.error = ''; this.q = Promise.resolve();
+    if (wl) { try { await wl.exit(); } catch (e) {} }
   },
   complete(prompt, opt = {}) {
     const run = this.q.then(async () => {
@@ -2834,7 +2891,7 @@ const MiniAI = {
     if (lines.length < 3) return null;
     miniRepeats(lines);
     const all = [L('N', 'Но́вый эпизо́д!', 'New episode!'), ...lines, L('T', 'Слу́шай да́льше!', 'Keep listening!')];
-    return { kind: 'story', title: 'Эпизо́д ' + p.n + '. ' + topic, lines: all, mini: true, meta: { episode: p.n, storyId: p.storyId || DATA.story.id, recap: lines.slice(0, 3).map((l) => l.en).join(' '), newWords: [], used: words } };
+    return { kind: 'story', title: 'Эпизо́д ' + p.n + '. ' + topic, lines: all, mini: true, model: this.modelName, meta: { episode: p.n, storyId: p.storyId || DATA.story.id, recap: lines.slice(0, 3).map((l) => l.en).join(' '), newWords: [], used: words } };
   },
   async words(signal) {
     const ws = this.pickWords(3).filter((w) => w.en);
@@ -2847,7 +2904,7 @@ const MiniAI = {
     }
     if (lines.length < 3) return null;
     lines.push(L('T', 'Молоде́ц!', 'Well done!'));
-    return { kind: 'words', title: 'Слова́: ' + ws.map((w) => w.ru).join(', '), lines, mini: true, meta: { used: ws.map((w) => w.term), gloss: [] } };
+    return { kind: 'words', title: 'Слова́: ' + ws.map((w) => w.ru).join(', '), lines, mini: true, model: this.modelName, meta: { used: ws.map((w) => w.term), gloss: [] } };
   },
 };
 
@@ -2881,7 +2938,7 @@ const UI = {
     $('#readout').textContent = k.f.toFixed(1).replace('.', ',') + ' МГц';
     $('#segKind').textContent = k.ru;
     $('#segTitle').innerHTML = renderRu(seg.title || '', { words: false }).html;
-    $('#segSrc').textContent = seg.rerun ? 'rerun' : seg.mini ? 'mini AI · may contain mistakes' : seg.offline ? 'studio tape' : 'live · written by ' + (Writer.kind() === 'ollama' ? 'Ollama' : 'Claude');
+    $('#segSrc').textContent = seg.rerun ? 'rerun' : seg.mini ? 'local AI · ' + (seg.model || 'mini') + ' · may contain mistakes' : seg.offline ? 'studio tape' : 'live · written by ' + (Writer.kind() === 'ollama' ? 'Ollama' : 'Claude');
   },
   playing(on) {
     $('#icPlay').toggleAttribute('hidden', on); $('#icPause').toggleAttribute('hidden', !on);
@@ -2933,7 +2990,7 @@ const UI = {
     if (!Gen.ready) msg = 'Connecting to the studio…';
     else if (!Gen.sample) { tone = 'warn'; msg = PAUSE_MSG.not_available; b = ['Set up writer', openSettings]; }
     else if (Gen.paused) { tone = 'warn'; msg = PAUSE_MSG[Gen.paused] || 'The hosts lost the script. Playing studio tapes until you reconnect them.'; b = ['not_granted', 'invalid_request'].includes(Gen.paused) ? ['Fix in settings', openSettings] : ['Reconnect hosts', () => Gen.resume()]; }
-    else if (Writer.kind() === 'mini' && MiniAI.state === 'loading') { tone = 'busy'; msg = 'Loading the mini AI from the ai folder: ' + Math.round(MiniAI.progress * 100) + '%. Built-in episodes play meanwhile.'; }
+    else if (Writer.kind() === 'mini' && MiniAI.state === 'loading') { tone = 'busy'; msg = 'Loading ' + (MiniAI.custom ? MiniAI.custom.name : 'the mini AI from the ai folder') + ': ' + Math.round(MiniAI.progress * 100) + '%. Built-in episodes play meanwhile.'; }
     else if (Gen.inFlight()) { tone = 'busy'; msg = Writer.short() + ' is writing the next ' + (Gen.label || 'segment') + (Gen.lines ? ': ' + Gen.lines + ' lines so far' : '') + '…'; }
     else if (D.ready.length) { tone = 'ok'; msg = 'Up next: ' + stripStress(D.ready[0].title || ''); }
     else if (!S.started) msg = 'Press Слушать. ' + Writer.short() + ' writes new episodes while you listen.';
@@ -2975,6 +3032,11 @@ const UI = {
     bar.firstElementChild.style.width = Math.round(AIV.progress * 100) + '%';
     btn.hidden = !b;
     if (b) { btn.textContent = b[0]; btn.onclick = b[1]; }
+  },
+  miniModel() {
+    const c = MiniAI.custom;
+    $('#miniModelName').textContent = c ? 'Model: ' + c.name + ' (' + (c.size / 1e9).toFixed(2) + ' GB, your file)' : 'Model: built-in Gemma 3 270M (tiny)';
+    $('#miniReset').hidden = !c;
   },
   aivSelects() {
     const n = (AIV.info && AIV.info.speakers) || 0;
@@ -3153,6 +3215,8 @@ function bind() {
   $('#wSave').addEventListener('click', () => { saveWriter(); UI.note('#wNote', Writer.usable() ? 'Saved.' : 'Saved. No writer active yet.'); });
   $('#wTest').addEventListener('click', testWriter);
   $('#wForget').addEventListener('click', forgetKey);
+  $('#miniFile').addEventListener('change', (e) => { const fs = Array.from(e.target.files || []); e.target.value = ''; pickMiniModel(fs); });
+  $('#miniReset').addEventListener('click', backToBuiltIn);
   $('#vRec').addEventListener('click', () => { wake(); Rec.toggle(); });
   $('#optEnVoice').addEventListener('change', (e) => { SET.enVoice = e.target.checked; saveSet(); });
   $('#optStress').addEventListener('change', (e) => { SET.stress = e.target.checked; saveSet(); rerenderText(); });
@@ -3185,6 +3249,7 @@ async function boot() {
   migrateWriter();
   migrateKey();
   writerUI();
+  ModelStore.get().then((c) => { if (c && !MiniAI.custom) { MiniAI.custom = c; UI.miniModel(); UI.status(); } });
   bind(); UI.status(); UI.aiv(); UI.aivSelects();
   Voice.init();
   Gen.get();

@@ -28,6 +28,7 @@ A) Mini AI on this computer (offline, free, the default)
    - It is tiny. Expect clumsy, sometimes wrong Russian and translations that miss.
      Good for listening practice and laughs, not as a grammar reference.
    - It writes story episodes and word drills. Questions, docs and voice ratings need Claude or Ollama.
+   - Want better Russian? Use a bigger model file (see BIGGER MODEL below).
 
 B) Claude with your API key (needs internet)
    - Get a key at console.anthropic.com
@@ -48,6 +49,18 @@ C) Ollama on this computer (offline)
    - Small models make more Russian grammar mistakes than Claude.
 
 D) Built-in episodes only (offline). No setup.
+
+
+BIGGER MODEL (better Russian, still offline)
+1. On your computer, download a GGUF model file under 2 GB. Good picks:
+   - Qwen2.5 1.5B Instruct, the q4_k_m file (about 1.1 GB). Best Russian of the small ones.
+     https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF
+   - Gemma 3 1B IT, the Q4_K_M file (about 0.8 GB).
+     https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF
+2. Settings (the Голоса button), Writer: Mini AI, then "Use a bigger model file" and pick it.
+3. The browser saves it, so you pick it once per computer. "Back to built-in" undoes it.
+Bigger models write better and slower. A computer with a decent graphics chip helps a lot.
+Model files with "IQ" in the name are slow and low quality here. Avoid them.
 
 
 VOICES
