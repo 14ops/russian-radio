@@ -2,6 +2,10 @@
 
 The app shows the same log under **What's new** at the bottom of the page.
 
+## v2.1.0 (2026-11-09)
+
+- **Debug log** at the bottom of the page. It records every warning and error, uncaught errors, and what the app did: start-up, the writer starting and finishing, the mini AI loading (model, WebGPU or CPU, chat or plain), AI voices, each segment on air, quizzes, MP3 saves and settings changes. *Copy log* and *Save as .txt* add a header with the version, browser and setup. The previous visit stays in the log, so a crash before a reload still shows up. API keys are scrubbed from every line.
+
 ## v2.0.0 (2026-11-09)
 
 - **Smart word review.** Each word on your list comes back after 1, 3, 7 and 16 days, then 35 and 60. The hosts put due words into new stories and drills. The Words tab shows what is due, and a word counts as known once it passes the 7-day review. A quiz or dictation miss brings a word back sooner.

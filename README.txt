@@ -1,4 +1,4 @@
-POVTORI FM v2.0.0: Russian A1 and A2 radio, USB edition
+POVTORI FM v2.1.0: Russian A1 and A2 radio, USB edition
 =======================================================
 
 START
@@ -8,6 +8,16 @@ START
 3. Press Слушать (Listen).
 
 Keep the app, voice and ai folders next to "Povtori FM.html". The page loads them from there.
+
+
+SOMETHING BROKE?
+Scroll to the bottom of the page and open "Debug log". It lists every warning and error,
+plus what the app did, and keeps the previous visit. Press "Save as .txt" or "Copy log"
+and send it. Your API key never shows up in it.
+
+
+NEW IN v2.1.0
+- The debug log above.
 
 
 NEW IN v2.0.0 (full list: CHANGELOG.md, or What's new at the bottom of the page)

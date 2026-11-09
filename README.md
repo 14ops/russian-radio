@@ -1,6 +1,6 @@
 # Povtori FM
 
-**v2.0.0** · [Change log](CHANGELOG.md)
+**v2.1.0** · [Change log](CHANGELOG.md)
 
 An endless Russian radio show for A1 and A2 learners. Two hosts, Nika and Tyoma, tell a story that never ends, repeat key phrases for you to say out loud, answer your questions on air, drill your own words and docs, run a guessing game, and score your voice.
 
@@ -33,6 +33,10 @@ Download the zip again and unzip it over the old folder. Your words, story and p
 ```
 cd /d E:\ && curl.exe -fL -o radio.zip https://github.com/14ops/russian-radio/archive/refs/heads/main.zip && tar -xf radio.zip && del radio.zip
 ```
+
+## Something broke?
+
+Open **Debug log** at the bottom of the page. It lists every warning and error, plus what the app did, and it keeps the previous visit. Press **Save as .txt** or **Copy log** and send that along. API keys never show up in it.
 
 ## What works offline
 

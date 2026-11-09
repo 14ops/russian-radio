@@ -298,6 +298,18 @@ details.paste summary{cursor:pointer;font-weight:600;font-size:13.5px}
 .news h4{margin:12px 0 4px;font:700 12px var(--font-display);color:var(--ink)}
 .news h4 small{font:500 10.5px var(--font-mono);color:var(--ink-2);margin-left:6px}
 .news ul{margin:0;padding-left:18px;display:grid;gap:3px}
+.dbg-tools{display:grid;gap:8px;margin-top:8px}
+.dbg-list{max-height:340px;overflow:auto;border:1px solid var(--rule);border-radius:10px;background:var(--well);padding:4px 10px;font:11.5px/1.45 var(--font-mono);color:var(--ink)}
+.dl{display:grid;grid-template-columns:auto 44px minmax(0,1fr);gap:8px;padding:3px 0;border-top:1px solid var(--rule)}
+.dl:first-child,.dl-h+.dl{border-top:0}
+.dl time{color:var(--ink-2);font-variant-numeric:tabular-nums}
+.dl b{font-weight:700;text-transform:uppercase;color:var(--ink-2)}
+.dl.warn b{color:var(--warn)}
+.dl.error b{color:var(--bad)}
+.dl span{overflow-wrap:anywhere}
+.dl i{color:var(--ink-2);font-style:normal}
+.dl-h{font:700 10.5px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);padding:8px 0 2px}
+#dbgCount.bad{color:var(--bad)}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 <script src="app/anthropic-sdk.js"></script>
@@ -551,6 +563,13 @@ details.paste summary{cursor:pointer;font-weight:600;font-size:13.5px}
   <footer class="foot">
     <p id="footText">New episodes come from the writer you pick in settings.</p>
     <details class="news" id="news"><summary>Povtori FM <span id="verText"></span> · What's new</summary><div id="changeLog"></div></details>
+    <details class="news" id="dbgBox"><summary>Debug log <span id="dbgCount"></span></summary>
+      <div class="dbg-tools">
+        <p class="fine">Warnings, errors and what the app did, newest at the bottom. If something breaks, save this and send it. Your API key never shows up here.</p>
+        <div class="row"><button type="button" class="btn small ghost" id="dbgCopy">Copy log</button><button type="button" class="btn small ghost" id="dbgSave">Save as .txt</button><button type="button" class="btn small ghost" id="dbgClear">Clear</button><label class="check"><input type="checkbox" id="dbgOnly"> Only warnings and errors</label></div>
+        <div class="dbg-list" id="dbgList" role="log" aria-label="Debug log"></div>
+      </div>
+    </details>
   </footer>
 </div>
 <div class="toast" id="toast" role="status" hidden></div>
@@ -582,6 +601,75 @@ const anySignal = (...sigs) => {
 const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
 const str = (v, max = 200) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 const strs = (v) => (Array.isArray(v) ? v.map((x) => String(x ?? '').trim()).filter(Boolean) : []);
+
+/* ---------- debug log: warnings, errors and what the app did; shown in the footer, API keys scrubbed ---------- */
+const Dbg = {
+  items: [], prev: [], max: 400, saveT: 0, raf: 0,
+  scrub(s) {
+    s = String(s).replace(/sk-ant-[A-Za-z0-9_-]{4,}/g, 'sk-ant-***');
+    try { const k = Writer.key(); if (k && k.length >= 8) s = s.split(k).join('***'); } catch (e) {}
+    return s.length > 700 ? s.slice(0, 700) + '…' : s;
+  },
+  fmt(a) {
+    if (a instanceof Error) return a.name + ': ' + a.message;
+    if (a && typeof a === 'object') {
+      if (a.code || a.message) return (a.code ? '[' + a.code + '] ' : '') + (a.message || '');
+      try { return JSON.stringify(a).slice(0, 400); } catch (e) { return Object.prototype.toString.call(a); }
+    }
+    return String(a);
+  },
+  add(level, args) {
+    let msg = '';
+    try { msg = this.scrub(args.map((a) => this.fmt(a)).join(' ').trim()); } catch (e) { msg = 'unprintable message'; }
+    if (!msg) return;
+    const last = this.items[this.items.length - 1];
+    if (last && last.level === level && last.msg === msg) { last.n = (last.n || 1) + 1; last.ts = Date.now(); }
+    else { this.items.push({ ts: Date.now(), level, msg }); if (this.items.length > this.max) this.items.shift(); }
+    if (level !== 'info') this.store();
+    this.paint();
+  },
+  info(...a) { this.add('info', a); },
+  warn(...a) { this.add('warn', a); },
+  store(now) {
+    clearTimeout(this.saveT);
+    const go = () => { try { localStorage.setItem('povtori:debug', JSON.stringify(this.items.slice(-150))); } catch (e) {} };
+    if (now) go(); else this.saveT = setTimeout(go, 600);
+  },
+  load() { try { const v = JSON.parse(localStorage.getItem('povtori:debug') || '[]'); this.prev = Array.isArray(v) ? v.filter((x) => x && x.msg).slice(-150) : []; } catch (e) { this.prev = []; } },
+  counts() { let e = 0, w = 0; for (const x of this.items) { if (x.level === 'error') e += x.n || 1; else if (x.level === 'warn') w += x.n || 1; } return { e, w }; },
+  paint() { if (this.raf) return; this.raf = setTimeout(() => { this.raf = 0; try { UI.dbg(); } catch (e) {} }, 120); },
+  env() {
+    const ls = (() => { try { localStorage.setItem('povtori:t', '1'); localStorage.removeItem('povtori:t'); return 'ok'; } catch (e) { return 'blocked'; } })();
+    const rows = [['Version', VERSION], ['Time', new Date().toString()], ['Page', location.protocol === 'file:' ? 'opened from a folder (file:)' : location.protocol + '//' + location.host], ['Browser', navigator.userAgent], ['Language', navigator.language],
+      ['CPU threads', navigator.hardwareConcurrency || '?'], ['Memory', navigator.deviceMemory ? navigator.deviceMemory + ' GB' : '?'], ['WebGPU', 'gpu' in navigator ? 'yes' : 'no'], ['Local storage', ls]];
+    try {
+      rows.push(['Writer', Writer.kind() + (Writer.kind() === 'mini' ? ' · ' + MiniAI.modelName + ' · ' + MiniAI.state + (MiniAI.wl ? (MiniAI.gpu ? ' · WebGPU' : ' · CPU') + (MiniAI.useChat() ? ' · chat format' : ' · plain text') : '') + (MiniAI.error ? ' · ' + MiniAI.error : '') : Writer.kind() === 'claude' ? ' · ' + SET.claudeModel + (Writer.key() ? ' · key set' : ' · no key') : Writer.kind() === 'ollama' ? ' · ' + SET.ollamaModel + ' at ' + SET.ollamaUrl : '')]);
+      rows.push(['Writer status', !Gen.ready ? 'starting' : Gen.paused ? 'paused: ' + Gen.paused : Gen.available() ? 'available' : 'not available']);
+      rows.push(['Voices', 'setting ' + SET.engine + ' · AI voices ' + AIV.state + (AIV.error ? ' (' + AIV.error + ')' : '') + ' · device voices: ' + Voice.ru.length + ' Russian, ' + Voice.en.length + ' English']);
+      rows.push(['Show', 'level ' + SET.level + ' · ' + SET.mode + ' mode · ' + (S.playing ? 'playing' : 'paused') + ' · storage ' + Store.mode]);
+      rows.push(['Your data', DATA.vocab.length + ' words · story episode ' + DATA.story.episode + ' · ' + DATA.docs.length + ' docs · ' + DATA.inbox.length + ' questions']);
+    } catch (e) { rows.push(['State', 'unavailable: ' + this.fmt(e)]); }
+    return rows.map(([k, v]) => k + ': ' + this.scrub(String(v)));
+  },
+  line(x) { const d = new Date(x.ts); return d.toLocaleDateString('en-CA') + ' ' + d.toTimeString().slice(0, 8) + '  ' + x.level.toUpperCase().padEnd(5) + ' ' + x.msg + (x.n > 1 ? '  (x' + x.n + ')' : ''); },
+  text() {
+    return ['Povtori FM debug log', ...this.env(), '', ...(this.prev.length ? ['--- previous visit ---', ...this.prev.map((x) => this.line(x)), ''] : []), '--- this visit ---', ...this.items.map((x) => this.line(x))].join('\n');
+  },
+  async copy() {
+    const t = this.text();
+    try { await navigator.clipboard.writeText(t); return true; } catch (e) {}
+    try { const ta = document.createElement('textarea'); ta.value = t; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); return ok; } catch (e) { return false; }
+  },
+  save() { Export.download(new Blob([this.text()], { type: 'text/plain;charset=utf-8' }), 'povtori-debug-log-' + new Date().toLocaleDateString('en-CA') + '.txt'); },
+  clear() { this.items = []; this.prev = []; try { localStorage.removeItem('povtori:debug'); } catch (e) {} this.paint(); },
+};
+Dbg.load();
+['warn', 'error'].forEach((lv) => {
+  const orig = console[lv] ? console[lv].bind(console) : () => {};
+  console[lv] = (...a) => { try { Dbg.add(lv, a); } catch (e) {} orig(...a); };
+});
+window.addEventListener('error', (e) => { Dbg.add('error', [(e && e.message) || 'Script error', e && e.filename ? '(' + String(e.filename).split('/').pop() + ':' + e.lineno + ')' : '']); });
+window.addEventListener('unhandledrejection', (e) => { Dbg.add('error', ['Unhandled promise rejection:', e && e.reason]); });
 
 /* ---------- stations, offline studio tapes ---------- */
 const KINDS = {
@@ -721,8 +809,11 @@ const WORD_IDEAS = ['ко́фе', 'метро́', 'дождь', 'друг', 'в�
 const PHRASE_IDEAS = ['Кот пьёт молоко́.', 'Приве́т! Как дела́?', 'Где моя́ ры́ба?', 'Ско́лько сто́ит?'];
 
 /* ---------- version and change log ---------- */
-const VERSION = '2.0.0';
+const VERSION = '2.1.0';
 const CHANGES = [
+  { v: '2.1.0', date: '2026-11-09', items: [
+    'Debug log at the bottom of the page: every warning and error, plus what the app did (writer, voices, segments, MP3 saves). Copy it or save it as a .txt file. It keeps the previous visit too, and it never shows your API key.',
+  ] },
   { v: '2.0.0', date: '2026-11-09', items: [
     'Smart word review: each of your words comes back after 1, 3, 7 and 16 days. The hosts put due words into new stories and drills, and the Words tab shows what is due.',
     'Story quiz: 3 tap-to-answer questions after each story. Every right answer adds a point to your game score.',
@@ -950,6 +1041,7 @@ const Voice = {
     this.all = vs;
     this.ru = vs.filter((v) => /^ru([-_]|$)/i.test(v.lang || ''));
     this.en = vs.filter((v) => /^en([-_]|$)/i.test(v.lang || ''));
+    Dbg.info('Device voices: ' + this.ru.length + ' Russian, ' + this.en.length + ' English, ' + vs.length + ' total');
     this.pick(); UI.voiceSelects(); UI.voiceNotice();
   },
   score(v) { const n = v.name || ''; return (/natural|neural|premium|enhanced|wavenet/i.test(n) ? 6 : 0) + (/google/i.test(n) ? 3 : 0) + (/online/i.test(n) ? 1 : 0) + (v.localService ? 0.5 : 0); },
@@ -1650,7 +1742,7 @@ const D = {
   queue: [], ready: [], run: null, cur: null, curSeg: null, lastLine: null, segN: 0, rot: 0, fillers: 0, offIdx: 0, recent: [],
   play() {
     if (S.playing) return;
-    S.playing = true; UI.playing(true); MediaKeys.on();
+    S.playing = true; UI.playing(true); MediaKeys.on(); Dbg.info('Play');
     AE.ensure();
     if (AE.ctx && AE.ctx.state === 'suspended') AE.ctx.resume().catch(() => {});
     if (!S.started) { S.started = true; UI.clearPreview(); this.opening(); }
@@ -1660,7 +1752,7 @@ const D = {
   },
   pause() {
     if (!S.playing) return;
-    S.playing = false; UI.playing(false); MediaKeys.off(); Progress.save();
+    S.playing = false; UI.playing(false); MediaKeys.off(); Progress.save(); Dbg.info('Pause');
     if (this.run) this.run.abort();
     Voice.stop(); UI.turnOff(); UI.talking(null); Wake.off();
     try { if (AE.ctx) AE.ctx.suspend(); } catch (e) {}
@@ -1796,6 +1888,7 @@ const D = {
   },
   onSeg(seg) {
     this.curSeg = seg; this.segN++;
+    Dbg.info('On air: ' + (KINDS[seg.kind] || KINDS.story).en + ' · ' + stripStress(seg.title || '') + ' (' + (seg.rerun ? 'rerun' : seg.mini ? 'mini AI' : seg.offline ? 'studio tape' : 'written live') + ')');
     UI.segment(seg); UI.logSeg(seg);
     if (seg.kind === 'inbox' && seg.meta && seg.meta.qid) Inbox.setStatus(seg.meta.qid, 'onair');
     if (seg.kind === 'game') Game.begin(seg);
@@ -2053,6 +2146,7 @@ const Gen = {
       this.sample = Writer.usable() ? Writer : null;
       this.limits = this.sample ? { images: Writer.images() ? {} : null } : null;
       this.ready = true; UI.status(); UI.docsHint();
+      Dbg.info('Writer: ' + Writer.kind() + (this.sample ? ' is set up' : ' is not set up, so built-in episodes play'));
       if (S.playing) { this.maybePrefetch(); Inbox.process(); }
       return this.sample;
     })();
@@ -2085,6 +2179,8 @@ const Gen = {
     const ctl = new AbortController(); this.ctls.add(ctl);
     this.label = KINDS[kind] ? KINDS[kind].en.toLowerCase() : kind; this.lines = 0;
     let lastPaint = 0;
+    const tw = performance.now();
+    Dbg.info(Writer.short() + ' started writing: ' + this.label + (kind === 'story' ? ' (episode ' + payload.n + ')' : ''));
     try {
       const data = Writer.kind() === 'mini' ? null : await sample.json(Prompts[kind](payload), { signal: ctl.signal, cache: false, modelTier: 'default', onText: ({ text }) => {
         this.lines = (text.match(/"(?:ru|en)"\s*:/g) || []).length;
@@ -2093,6 +2189,7 @@ const Gen = {
       const seg = Writer.kind() === 'mini' ? await MiniAI.make(kind, payload, ctl.signal) : Parse[kind](data, payload);
       if (!seg) throw { code: 'invalid_json' };
       this.fails = 0;
+      Dbg.info(Writer.short() + ' finished ' + this.label + ': ' + segRuLines(seg).length + ' lines in ' + Math.round((performance.now() - tw) / 1000) + ' s');
       return seg;
     } finally {
       this.ctls.delete(ctl);
@@ -2114,7 +2211,8 @@ const Gen = {
   fail(e) {
     const code = (e && e.code) || 'upstream_error';
     if (code === 'cancelled' || code === 'unsupported') return;
-    if (code === 'invalid_json' && Writer.kind() === 'mini') { UI.status(); return; }
+    if (code === 'invalid_json' && Writer.kind() === 'mini') { Dbg.info('The mini AI wrote nothing usable this round. Built-in episodes fill in.'); UI.status(); return; }
+    if (code === 'not_available') Dbg.info('No writer set up, so the hosts play built-in episodes.');
     if (code === 'mini_failed') PAUSE_MSG.mini_failed = 'The mini AI could not start: ' + ((e && e.message) || 'unknown error') + ' Playing built-in episodes and reruns.';
     if (code !== 'not_available') console.warn('Povtori: Claude call failed', code, e && e.message);
     this.fails++;
@@ -2514,6 +2612,7 @@ const Quiz = {
     if (qs.length < 2) return;
     const q = { id: newId(), title: seg.title || '', qs: qs.map((x) => Object.assign(x, { picked: null })), done: false, right: 0, ts: Date.now() };
     this.cur = q; UI.quiz();
+    Dbg.info('Quiz: ' + q.qs.length + ' questions about ' + stripStress(q.title) + ((seg.quiz || []).length ? ', written by ' + Writer.short() : ', built from the episode'));
     const qseg = { kind: 'quiz', title: 'Виктори́на', offline: true, quizId: q.id };
     D.queue.unshift({ type: 'seg', seg: qseg }, ...QUIZ_LINES.intro.map((l) => mkLine(l, qseg, 'quiz')), { type: 'quiz', ms: SET.mode === 'music' ? 22000 : 32000, quiz: q, seg: qseg }, { type: 'segEnd', seg: qseg });
   },
@@ -3015,6 +3114,7 @@ async function pickMiniModel(list) {
   UI.note('#wNote', 'Saving ' + name + '…');
   const saved = await ModelStore.put({ name, size, files });
   MiniAI.custom = { name, size, files };
+  Dbg.info('Settings: model file ' + name + ' (' + (size / 1e9).toFixed(2) + ' GB), ' + (saved ? 'saved in this browser' : 'the browser would not store it, so it lasts this visit'));
   await MiniAI.reset(); Gen.reset(); UI.miniModel(); UI.footer();
   UI.note('#wNote', (saved ? 'Saved in this browser. ' : 'Using it for this visit. The browser would not store it. ') + name + ' writes from the next episode.');
 }
@@ -3053,6 +3153,7 @@ function saveWriter() {
   if (SET.rememberKey && KEY_MEM) LS.set('apiKey', KEY_MEM); else LS.del('apiKey');
   Writer.client = null; Writer.clientKey = '';
   Gen.reset(); UI.footer();
+  Dbg.info('Settings: writer ' + SET.writer + (SET.writer === 'claude' ? (KEY_MEM ? ', key set' : ', no key') + (SET.rememberKey ? ', remembered' : ', this visit only') : ''));
 }
 function forgetKey() {
   KEY_MEM = ''; LS.del('apiKey');
@@ -3238,6 +3339,7 @@ const MiniAI = {
     if (!this.loading) this.loading = this.load().catch((e) => {
       if (g !== this.gen || (e && e.code === 'cancelled')) throw { code: 'cancelled' };
       this.loading = null; this.state = 'failed'; this.error = explainMini(e); UI.status();
+      Dbg.add('error', ['Mini AI could not start: ' + this.error, e]);
       throw { code: 'mini_failed', message: this.error };
     });
     return this.loading;
@@ -3245,7 +3347,8 @@ const MiniAI = {
   async load() {
     this.state = 'loading'; this.progress = 0; UI.status();
     for (let i = 0; i < 240 && ['loading', 'tuning'].includes(AIV.state); i++) await sleep(500);
-    const g = this.gen;
+    const g = this.gen, tl = performance.now();
+    Dbg.info('Mini AI: loading ' + (this.custom ? 'your model file ' + this.custom.name + ' (' + (this.custom.size / 1e9).toFixed(2) + ' GB)' : 'the built-in Gemma 3 270M from the ai folder'));
     if (!self.Wllama) await loadLocal('ai/wllama.js');
     if (!this.custom) this.custom = await ModelStore.get();
     let files = null;
@@ -3287,6 +3390,7 @@ const MiniAI = {
     if (!this.wl) throw lastErr || new Error('the engine did not start');
     delete self.__aiWasm;
     this.state = 'ready'; this.progress = 1; UI.status();
+    Dbg.info('Mini AI ready in ' + Math.round((performance.now() - tl) / 1000) + ' s: ' + this.modelName + ', ' + (this.gpu ? 'WebGPU' : 'CPU only') + ', ' + (this.useChat() ? 'chat format' : 'plain text') + (this.template() ? '' : ', no chat template'));
     return this.wl;
   },
   async reset() {
@@ -3384,6 +3488,7 @@ const MiniAI = {
         text += out.endsWith('\n') ? out : out + '\n';
       }
     }
+    Dbg.info('Mini AI episode ' + p.n + ': ' + lines.length + ' usable lines' + (chat ? ', chat format' : ', plain text') + (lines.length < 3 ? ', too few, skipped' : ''));
     if (lines.length < 3) return null;
     miniRepeats(lines);
     const all = [L('N', 'Но́вый эпизо́д!', 'New episode!'), ...lines, L('T', 'Слу́шай да́льше!', 'Keep listening!')];
@@ -3521,6 +3626,7 @@ const Export = {
     if (!this.can(seg)) { UI.toast('Story, word, doc and question segments save as MP3.'); return; }
     this.busy = true; UI.saves();
     const note = (t) => UI.saveNote(t);
+    Dbg.info('MP3: saving ' + stripStress(seg.title || 'a segment'));
     try {
       note('Loading the MP3 encoder…');
       const lame = await this.encoder();
@@ -3531,6 +3637,7 @@ const Export = {
       this.last = { name, size: blob.size, sec: mix.length / rate, rate };
       this.download(blob, name);
       note('Saved "' + name + '": ' + (blob.size / 1e6).toFixed(1) + ' MB, ' + fmtDur(mix.length / rate) + ' long. Look in your Downloads folder.');
+      Dbg.info('MP3 saved: ' + name + ', ' + (blob.size / 1e6).toFixed(2) + ' MB, ' + fmtDur(mix.length / rate) + ', ' + rate + ' Hz');
     } catch (e) {
       console.warn('Povtori: MP3 export failed', e);
       note('Could not save the MP3: ' + ((e && e.message) || 'unknown error'));
@@ -3543,7 +3650,7 @@ const MediaKeys = {
   ok: 'mediaSession' in navigator && typeof window.MediaMetadata === 'function',
   el: null, art: '', handlers: {}, lastKey: '',
   init() {
-    if (!this.ok) return;
+    if (!this.ok) { Dbg.info('Media keys: this browser has no Media Session support'); return; }
     const map = {
       play: () => { wake(); if (S.playing) this.on(); else D.play(); },
       pause: () => { if (S.playing) D.pause(); else this.off(); },
@@ -3555,6 +3662,7 @@ const MediaKeys = {
     };
     for (const [a, fn] of Object.entries(map)) { try { navigator.mediaSession.setActionHandler(a, fn); this.handlers[a] = fn; } catch (e) {} }
     this.meta('Povtori FM', 'Nika and Tyoma', 'Russian radio');
+    Dbg.info('Media keys: ' + Object.keys(this.handlers).length + ' controls registered');
   },
   /* the browser only routes media keys to a page that plays a media element, so a silent loop runs while the radio plays */
   silence() {
@@ -3723,6 +3831,12 @@ const UI = {
     const st = SET.engine !== 'ai' ? 'device' : AIV.state;
     const saver = !!(navigator.connection && navigator.connection.saveData);
     let msg = '', b = null;
+    const ev = AIV.state + (AIV.state === 'failed' ? ': ' + AIV.error : '');
+    if (ev !== this.aivLast) {
+      this.aivLast = ev;
+      const say = { off: '', loading: 'AI voices: loading ' + (VoicePack.present ? 'from the voice folder' : 'from the internet'), tuning: 'AI voices: loaded, picking a voice for each host', ready: 'AI voices: ready' + (AIV.info ? ', ' + AIV.info.speakers + ' voices at ' + AIV.info.rate + ' Hz' : ''), failed: 'AI voices failed: ' + AIV.error + ' Device voices take over.' }[AIV.state];
+      if (say) Dbg.add(AIV.state === 'failed' ? 'warn' : 'info', [say]);
+    }
     el.dataset.state = st;
     if (st === 'device') { msg = 'Device voices are on. Switch to AI voices for neural Nika and Tyoma voices that run in this browser.'; b = ['Use AI voices', () => { SET.engine = 'ai'; saveSet(); $('#optEngine').value = 'ai'; UI.footer(); AIV.start(); UI.aiv(); }]; }
     else if (st === 'off') { msg = 'Nika and Tyoma speak with Supertonic 3, a neural voice model that runs on this computer. It loads when you press Слушать, from the voice folder, or as a one-time ' + AIV_MB + ' MB download if that folder is missing.'; if (saver || S.started) b = ['Load AI voices', () => AIV.start()]; }
@@ -3910,6 +4024,19 @@ const UI = {
       row('Lines heard', t.l) + row('Game points', DATA.game.score) + row('Best streak', Math.max(DATA.progress.best || 0, streak) + ' days') +
       row('Level', isA2() ? 'A2: past tense and cases' : 'A1: basics');
   },
+  dbg() {
+    const c = Dbg.counts(), sum = $('#dbgCount');
+    if (!sum) return;
+    sum.textContent = c.e || c.w ? '· ' + [c.e ? c.e + (c.e === 1 ? ' error' : ' errors') : '', c.w ? c.w + (c.w === 1 ? ' warning' : ' warnings') : ''].filter(Boolean).join(', ') : '· no problems';
+    sum.classList.toggle('bad', c.e > 0);
+    if (!$('#dbgBox').open) return;
+    const only = $('#dbgOnly').checked, list = $('#dbgList'), near = list.scrollHeight - list.scrollTop - list.clientHeight < 60;
+    const rows = (arr) => arr.filter((x) => !only || x.level !== 'info').map((x) => '<div class="dl ' + esc(x.level) + '"><time>' + new Date(x.ts).toTimeString().slice(0, 8) + '</time><b>' + esc(x.level) + '</b><span>' + esc(x.msg) + (x.n > 1 ? ' <i>×' + x.n + '</i>' : '') + '</span></div>').join('');
+    const prev = rows(Dbg.prev), cur = rows(Dbg.items);
+    list.innerHTML = (Dbg.prev.length ? '<div class="dl-h">Previous visit</div>' + (prev || '<div class="dl info"><time></time><b></b><span>No warnings or errors.</span></div>') + '<div class="dl-h">This visit</div>' : '') +
+      (cur || '<div class="dl info"><time></time><b></b><span>' + (only ? 'No warnings or errors so far.' : 'Nothing logged yet.') + '</span></div>');
+    if (near) list.scrollTop = list.scrollHeight;
+  },
   changelog() {
     $('#verText').textContent = 'v' + VERSION;
     $('#changeLog').innerHTML = CHANGES.map((c) => '<h4>v' + esc(c.v) + '<small>' + esc(c.date) + '</small></h4><ul>' + c.items.map((x) => '<li>' + renderMixed(x) + '</li>').join('') + '</ul>').join('');
@@ -3959,6 +4086,7 @@ function rerenderText() { applyStatic(); UI.chips(); UI.vChips(); UI.vocab(); UI
 function setLevel(lv) {
   if (SET.level === lv) return;
   SET.level = lv; saveSet(); UI.level(); UI.saves();
+  Dbg.info('Settings: level ' + lv);
   if (!$('#p-prog').hidden) UI.progress();
   UI.toast(lv === 'A2' ? 'A2 mode: past tense and cases, starting with the next segment the hosts write.' : 'A1 mode: present tense and short sentences.');
 }
@@ -4036,7 +4164,7 @@ function bind() {
   });
   const voicePick = () => { SET.vN = $('#vN').value; SET.vT = $('#vT').value; SET.vEN = $('#vEN').value; SET.vET = $('#vET').value; saveSet(); Voice.pick(); };
   ['#vN', '#vT', '#vEN', '#vET'].forEach((id) => $(id).addEventListener('change', voicePick));
-  $('#optEngine').addEventListener('change', (e) => { SET.engine = e.target.value; saveSet(); UI.footer(); if (SET.engine === 'ai') { wake(); AIV.start(); } UI.aiv(); UI.voiceNotice(); });
+  $('#optEngine').addEventListener('change', (e) => { SET.engine = e.target.value; saveSet(); UI.footer(); Dbg.info('Settings: voices ' + SET.engine); if (SET.engine === 'ai') { wake(); AIV.start(); } UI.aiv(); UI.voiceNotice(); });
   const aPick = () => { SET.aN = $('#aN').value; SET.aT = $('#aT').value; saveSet(); AIV.pick(); UI.aivSelects(); UI.aiv(); };
   $('#aN').addEventListener('change', aPick); $('#aT').addEventListener('change', aPick);
   $('#wKind').addEventListener('change', writerFields);
@@ -4083,18 +4211,24 @@ function bind() {
   const tipHide = () => { const tip = $('#prTip'); if (tip) tip.hidden = true; };
   plot.addEventListener('pointerover', tipShow); plot.addEventListener('focusin', tipShow);
   plot.addEventListener('pointerleave', tipHide); plot.addEventListener('focusout', tipHide);
-  window.addEventListener('pagehide', () => Progress.save());
+  window.addEventListener('pagehide', () => { Progress.save(); Dbg.store(true); });
+  $('#dbgBox').addEventListener('toggle', () => { if ($('#dbgBox').open) { UI.dbg(); const l = $('#dbgList'); l.scrollTop = l.scrollHeight; } });
+  $('#dbgOnly').addEventListener('change', () => UI.dbg());
+  $('#dbgCopy').addEventListener('click', async () => { const okc = await Dbg.copy(); UI.toast(okc ? 'Debug log copied. Paste it in your message.' : 'Copy did not work here. Use Save as .txt.'); });
+  $('#dbgSave').addEventListener('click', () => { Dbg.save(); UI.toast('Debug log saved to your Downloads folder.'); });
+  $('#dbgClear').addEventListener('click', () => { Dbg.clear(); UI.toast('Debug log cleared.'); });
   document.addEventListener('keydown', (e) => {
     if (e.code !== 'Space' || e.repeat) return;
     const a = document.activeElement;
     if (a && /INPUT|TEXTAREA|SELECT|BUTTON|SUMMARY/.test(a.tagName)) return;
     e.preventDefault(); wake(); D.toggle();
   });
-  document.addEventListener('visibilitychange', () => { if (!document.hidden && S.playing) Wake.on(); });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && S.playing) Wake.on(); if (document.hidden) { Dbg.store(true); Progress.save(); } });
 }
 
 /* ---------- boot ---------- */
 async function boot() {
+  Dbg.info('Povtori FM v' + VERSION + ' started ' + (location.protocol === 'file:' ? 'from a folder' : 'at ' + location.host) + ' · ' + (navigator.userAgentData && navigator.userAgentData.brands ? navigator.userAgentData.brands.map((b) => b.brand + ' ' + b.version).filter((b) => !/Not/.test(b)).join(', ') : navigator.userAgent));
   applyStatic();
   $('#optEnVoice').checked = SET.enVoice; $('#optStress').checked = SET.stress; $('#optAutoGame').checked = SET.autoGame; $('#optGap').value = SET.gap; $('#optEngine').value = SET.engine; $('#optQuiz').checked = SET.quiz;
   UI.speed(); UI.en(); applyMode(); UI.chips(); UI.vChips(); UI.level(); UI.kb(); UI.changelog(); UI.miniModel();
@@ -4127,6 +4261,8 @@ async function boot() {
   if (!S.started) { UI.segment({ kind: 'story', title: DATA.story.episode ? 'Next: Эпизо́д ' + (DATA.story.episode + 1) + ' · ' + DATA.story.title : DATA.story.title, offline: true }); UI.preview(); }
   if (S.playing) Inbox.process();
   Progress.start();
+  Dbg.info('Loaded your data: ' + DATA.vocab.length + ' words, story episode ' + DATA.story.episode + ', ' + DATA.docs.length + ' docs, storage ' + Store.mode + ', level ' + SET.level);
+  UI.dbg();
   const seen = LS.get('seenVersion', '');
   if (seen !== VERSION) {
     LS.set('seenVersion', VERSION);
