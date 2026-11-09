@@ -1,6 +1,6 @@
 # Povtori FM
 
-**v2.1.0** · [Change log](CHANGELOG.md)
+**v2.1.1** · [Change log](CHANGELOG.md)
 
 An endless Russian radio show for A1 and A2 learners. Two hosts, Nika and Tyoma, tell a story that never ends, repeat key phrases for you to say out loud, answer your questions on air, drill your own words and docs, run a guessing game, and score your voice.
 

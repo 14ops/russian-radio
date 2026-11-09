@@ -248,7 +248,7 @@ details.paste summary{cursor:pointer;font-weight:600;font-size:13.5px}
 .rating .big{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .rating .big b{font:800 40px/1 var(--font-display)}
 .rating ul{margin:0;padding-left:18px;display:grid;gap:4px}
-.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--enamel);padding:10px 14px;border-radius:10px;font-size:13.5px;z-index:20;width:max-content;max-width:min(92vw,520px);box-shadow:0 10px 30px -10px rgba(0,0,0,.5)}
+.toast{pointer-events:none;position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--enamel);padding:10px 14px;border-radius:10px;font-size:13.5px;z-index:20;width:max-content;max-width:min(92vw,520px);box-shadow:0 10px 30px -10px rgba(0,0,0,.5)}
 .foot{font-size:12px;color:var(--ink-2);max-width:80ch;display:grid;gap:8px}
 .foot p{margin:0}
 /* v2: level switch, quiz, dictation, progress, MP3 saves, change log */
@@ -809,8 +809,12 @@ const WORD_IDEAS = ['ко́фе', 'метро́', 'дождь', 'друг', 'в�
 const PHRASE_IDEAS = ['Кот пьёт молоко́.', 'Приве́т! Как дела́?', 'Где моя́ ры́ба?', 'Ско́лько сто́ит?'];
 
 /* ---------- version and change log ---------- */
-const VERSION = '2.1.0';
+const VERSION = '2.1.1';
 const CHANGES = [
+  { v: '2.1.1', date: '2026-11-09', items: [
+    'Word review: a review day now runs from 4 in the morning to 4 in the morning, so a late-night session that crosses midnight counts a word once.',
+    'Debug log: the AI voices line now says correctly where the voices load from.',
+  ] },
   { v: '2.1.0', date: '2026-11-09', items: [
     'Debug log at the bottom of the page: every warning and error, plus what the app did (writer, voices, segments, MP3 saves). Copy it or save it as a .txt file. It keeps the previous visit too, and it never shows your API key.',
   ] },
@@ -878,6 +882,9 @@ const LAME_RATES = [8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000
 const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const dayStart = (ts) => { const d = new Date(ts); d.setHours(0, 0, 0, 0); return d.getTime(); };
 const addDays = (ts, n) => { const d = new Date(dayStart(ts)); d.setDate(d.getDate() + n); return d.getTime(); };
+/* a review day runs from 04:00 to 04:00, so a late-night session that crosses midnight counts as one day */
+const SRS_ROLL_H = 4;
+function srsDue(now, days) { const d = new Date(now - SRS_ROLL_H * 3600000); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + days); d.setHours(SRS_ROLL_H, 0, 0, 0); return d.getTime(); }
 const dayKey = (ts) => { const d = new Date(ts); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
 
 /* ---------- storage ---------- */
@@ -1487,6 +1494,7 @@ const AIV = {
     this.host = null; this.state = 'loading'; this.progress = 0; this.error = ''; this.fails = 0; this.jobs = []; this.busy = false;
     UI.aiv(); UI.voiceNotice();
     const local = await VoicePack.detect();
+    Dbg.info('AI voices: loading from ' + (local ? 'the voice folder' : 'the internet, because the voice folder is missing'));
     let prefix = '';
     if (local) {
       try { await VoicePack.runtime(); prefix = 'const createSherpaModule = ' + self.createSherpaModule.toString() + ';\nconst __sherpaApi = (' + self.__sherpaApiFactory.toString() + ')();\n'; }
@@ -2329,7 +2337,7 @@ const Vocab = {
     if (!ok) { w.stage = Math.max(0, w.stage - 2); w.due = now; w.lapses = (w.lapses || 0) + 1; return true; }
     if (w.due > now) return false;
     w.stage = Math.min(w.stage + 1, SRS_DAYS.length);
-    w.due = addDays(now, SRS_DAYS[w.stage - 1]);
+    w.due = srsDue(now, SRS_DAYS[w.stage - 1]);
     w.last = now;
     return true;
   },
@@ -3834,7 +3842,7 @@ const UI = {
     const ev = AIV.state + (AIV.state === 'failed' ? ': ' + AIV.error : '');
     if (ev !== this.aivLast) {
       this.aivLast = ev;
-      const say = { off: '', loading: 'AI voices: loading ' + (VoicePack.present ? 'from the voice folder' : 'from the internet'), tuning: 'AI voices: loaded, picking a voice for each host', ready: 'AI voices: ready' + (AIV.info ? ', ' + AIV.info.speakers + ' voices at ' + AIV.info.rate + ' Hz' : ''), failed: 'AI voices failed: ' + AIV.error + ' Device voices take over.' }[AIV.state];
+      const say = { off: '', loading: '', tuning: 'AI voices: loaded, picking a voice for each host', ready: 'AI voices: ready' + (AIV.info ? ', ' + AIV.info.speakers + ' voices at ' + AIV.info.rate + ' Hz' : ''), failed: 'AI voices failed: ' + AIV.error + ' Device voices take over.' }[AIV.state];
       if (say) Dbg.add(AIV.state === 'failed' ? 'warn' : 'info', [say]);
     }
     el.dataset.state = st;
@@ -4266,7 +4274,7 @@ async function boot() {
   const seen = LS.get('seenVersion', '');
   if (seen !== VERSION) {
     LS.set('seenVersion', VERSION);
-    if (seen || LS.get('introDone', false)) { $('#news').open = true; UI.toast('Povtori FM is now v' + VERSION + ' with 8 new features. See What’s new at the bottom.'); }
+    if (seen || LS.get('introDone', false)) { $('#news').open = true; UI.toast('Povtori FM updated to v' + VERSION + '. See What’s new at the bottom.'); }
   }
 }
 boot();

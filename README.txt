@@ -1,4 +1,4 @@
-POVTORI FM v2.1.0: Russian A1 and A2 radio, USB edition
+POVTORI FM v2.1.1: Russian A1 and A2 radio, USB edition
 =======================================================
 
 START

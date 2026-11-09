@@ -2,6 +2,12 @@
 
 The app shows the same log under **What's new** at the bottom of the page.
 
+## v2.1.1 (2026-11-09)
+
+- Word review: a review day runs from 04:00 to 04:00. A late-night session that crosses midnight no longer counts a word twice.
+- Debug log: the AI voices line reports where the voices load from after the voice folder check, so it no longer says "from the internet" when the folder is there.
+- The update notice no longer names a fixed number of new features, and it no longer blocks clicks on buttons under it.
+
 ## v2.1.0 (2026-11-09)
 
 - **Debug log** at the bottom of the page. It records every warning and error, uncaught errors, and what the app did: start-up, the writer starting and finishing, the mini AI loading (model, WebGPU or CPU, chat or plain), AI voices, each segment on air, quizzes, MP3 saves and settings changes. *Copy log* and *Save as .txt* add a header with the version, browser and setup. The previous visit stays in the log, so a crash before a reload still shows up. API keys are scrubbed from every line.
