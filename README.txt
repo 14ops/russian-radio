@@ -1,5 +1,5 @@
-POVTORI FM: Russian A1 radio, USB edition
-==========================================
+POVTORI FM v2.0.0: Russian A1 and A2 radio, USB edition
+=======================================================
 
 START
 1. Copy the whole Povtori-FM folder onto your USB stick.
@@ -8,6 +8,30 @@ START
 3. Press Слушать (Listen).
 
 Keep the app, voice and ai folders next to "Povtori FM.html". The page loads them from there.
+
+
+NEW IN v2.0.0 (full list: CHANGELOG.md, or What's new at the bottom of the page)
+- Word review: each word you add comes back after 1, 3, 7 and 16 days.
+  The hosts put due words into new stories and drills. The Words tab shows what is due.
+- Story quiz: 3 questions after each story, in the Game tab. Each right answer is a point.
+  Turn it off in Settings: "Quiz after each story".
+- Save as MP3: Story tab, "Take it with you", or "Save MP3" on a segment in the transcript.
+  About 5 MB per 10 minutes. It needs the AI voices, so the voice folder has to be there.
+  The file lands in your Downloads folder. Copy it to your phone.
+- Media keys: earbuds, keyboard media keys and the lock screen control the radio.
+  Play/pause, next = skip the segment, previous = replay the last line slowly.
+- Dictation tab: hear a line, type it, see every wrong letter. On-screen Russian keyboard included.
+- Progress tab: minutes per day, day streak, words known, quiz and dictation scores.
+  A day counts with 5 minutes of listening, a finished quiz, or one dictation line.
+- A2 mode: the A1 / A2 switch at the top. A2 adds past tense and cases.
+- Bigger mini AI models now get prompts in their own chat format (see BIGGER MODEL).
+
+
+UPDATE AN OLD COPY
+Download the new version and unzip it over the old folder. Your words, story, scores
+and progress live in the browser, not in the folder, so they stay.
+Windows CMD, with the USB as E: and the old copy in E:\russian-radio-main:
+  cd /d E:\ && curl.exe -fL -o radio.zip https://github.com/14ops/russian-radio/archive/refs/heads/main.zip && tar -xf radio.zip && del radio.zip
 
 
 WHAT RUNS OFFLINE
@@ -59,6 +83,9 @@ BIGGER MODEL (better Russian, still offline)
      https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF
 2. Settings (the Голоса button), Writer: Mini AI, then "Use a bigger model file" and pick it.
 3. The browser saves it, so you pick it once per computer. "Back to built-in" undoes it.
+4. Instruct models (Qwen2.5 Instruct, Gemma 3 IT) get prompts in their own chat format.
+   Settings, "Prompt style": Auto picks it for you. Chat or plain forces one.
+   In chat format the model also gets the story so far and your story ideas.
 Bigger models write better and slower. A computer with a decent graphics chip helps a lot.
 Model files with "IQ" in the name are slow and low quality here. Avoid them.
 
@@ -87,4 +114,6 @@ CREDITS AND LICENSES (see the LICENSES folder)
 - wllama, llama.cpp in WebAssembly (MIT)
 - sherpa-onnx runtime (Apache 2.0), packaged by @3sln/donki-lle (MIT)
 - Anthropic TypeScript SDK (MIT), pdf.js (Apache 2.0), mammoth (BSD 2)
+- lamejs, a JavaScript port of the LAME MP3 encoder (LGPL 3.0), app/lame.min.js, unmodified.
+  LAME: https://lame.sourceforge.net  lamejs: https://github.com/zhuker/lamejs
 - Fonts: Golos Text, Unbounded, JetBrains Mono (SIL Open Font License)
