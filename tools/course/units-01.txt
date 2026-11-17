@@ -1,0 +1,121 @@
+# Units 1 to 5. Format: see tools/build_course.py.
+
+== 1 | A1 | Привет! | Greetings and names
+recap: Masha, a student in Moscow, meets her new neighbor Anton. They say hello and tell each other their names.
+N: Привет! Я Ника. | Hi! I am Nika.
+T: Привет! А я Тёма. | Hi! And I am Tyoma.
+N> Lesson one: how to say hello and tell people your name.
+T*: Привет! | Hi!
+N: Это Маша. Маша студентка. | This is Masha. Masha is a student.
+T: А это Антон. Он новый сосед. | And this is Anton. He is the new neighbor.
+N: Антон говорит: Здравствуйте! | Anton says: Hello!
+T> Здравствуйте is the polite hello, for strangers and older people. Привет is for friends.
+N*: Здравствуйте! | Hello! (polite)
+T: Маша говорит: Привет! Меня зовут Маша. | Masha says: Hi! My name is Masha.
+N*: Меня зовут Маша. | My name is Masha.
+T: Антон говорит: А меня зовут Антон. Очень приятно! | Anton says: And my name is Anton. Nice to meet you!
+N*: Очень приятно! | Nice to meet you!
+T: А как тебя зовут? | And what is your name?
+N*: Как тебя зовут? | What is your name?
+T> Your turn. Say Меня зовут, then your name.
+N: Маша говорит: Пока, Антон! | Masha says: Bye, Anton!
+T: Антон говорит: До свидания! Ой. Пока! | Anton says: Goodbye! Oops. Bye!
+N*: Пока! | Bye!
+words: привет = hi; здравствуйте = hello (polite); меня зовут = my name is; как тебя зовут = what is your name; очень приятно = nice to meet you; пока = bye; до свидания = goodbye; сосед = neighbor
+quiz: Which hello is polite, for strangers? | Здравствуйте | Привет | Пока
+quiz: What does «Меня зовут Маша» mean? | My name is Masha | This is Masha | Masha is a student
+quiz: Who is Anton? | Masha's new neighbor | Masha's brother | Masha's teacher
+
+== 2 | A1 | Это Маша | Who and what
+recap: Masha has a big ginger cat, Boris. He drinks milk and wants fish.
+N: Кто это? | Who is this?
+T: Это Маша. | This is Masha.
+N: А кто это? | And who is this?
+T: Это Борис. Борис кот. | This is Boris. Boris is a cat.
+N*: Кто это? | Who is this?
+T> Кто means "who", for people and animals. Что means "what", for things.
+N: У Маши есть кот. | Masha has a cat.
+T: Борис большой и рыжий. | Boris is big and ginger.
+N*: Рыжий кот. | A ginger cat.
+T: А что это? | And what is this?
+N: Это молоко. Борис пьёт молоко. | This is milk. Boris drinks milk.
+T*: Что это? | What is this?
+N: А это рыба. Борис любит рыбу! | And this is fish. Boris loves fish!
+T: Борис говорит: мяу! | Boris says: meow!
+N: Это значит: где моя рыба? | That means: where is my fish?
+T*: Где моя рыба? | Where is my fish?
+N: Он не говорит спасибо. Он кот. | He does not say thank you. He is a cat.
+words: кто = who; что = what; это = this is; кот = cat; молоко = milk; рыба = fish; большой = big; рыжий = ginger; где = where
+quiz: What does «Кто это?» ask? | Who is this? | What is this? | Where is this?
+quiz: What color is Boris? | ginger | black | white
+quiz: What does Boris drink? | milk | coffee | tea
+
+== 3 | A1 | Как дела'? | How are you
+recap: Masha meets Anton and his dog Sharik. Everyone is fine, but Boris watches the dog from the window and does not like it.
+N: Привет, Тёма! Как дела'? | Hi, Tyoma! How are you?
+T: Хорошо, спасибо! А у тебя? | Good, thanks! And you?
+N: Отлично! | Excellent!
+T*: Как дела'? | How are you?
+N*: Хорошо, спасибо! | Good, thanks!
+T: Утро. Маша видит Антона. | Morning. Masha sees Anton.
+N: Она говорит: Привет, Антон! Как дела'? | She says: Hi, Anton! How are you?
+T: Антон говорит: Нормально. А у тебя? | Anton says: Fine. And you?
+N> А у тебя? means "And you?". It sends the question back.
+T*: А у тебя? | And you?
+N: У Антона есть собака. Его зовут Шарик. | Anton has a dog. His name is Sharik.
+T: Маша говорит: Привет, Шарик! | Masha says: Hi, Sharik!
+N: Шарик говорит: гав! | Sharik says: woof!
+T: А Борис смотрит в окно. Он видит Шарика. | And Boris looks out the window. He sees Sharik.
+N: Как дела', Борис? Плохо! | How are you, Boris? Bad!
+T*: Плохо. | Bad.
+N> With a teacher or a stranger, say Как у вас дела'? Вы is the polite "you".
+words: как дела' = how are you; хорошо = good, well; отлично = excellent; нормально = fine, OK; плохо = bad; спасибо = thanks; а у тебя = and you; собака = dog; утро = morning
+quiz: How do you send the question back? | А у тебя? | Как дела'? | Спасибо!
+quiz: What is Anton's dog called? | Sharik | Boris | Tyoma
+quiz: What does «Плохо» mean? | bad | good | excellent
+
+== 4 | A1 | Мой дом | My home
+recap: Masha shows Anton her apartment. Boris sits on the table and thinks everything there is his.
+N: Это мой дом. | This is my home.
+T: А это моя квартира. | And this is my apartment.
+N> Мой goes with "he" words, моя with "she" words, моё with "it" words.
+T*: Мой дом. Моя квартира. | My home. My apartment.
+N: Маша говорит: Антон, это моя комната. | Masha says: Anton, this is my room.
+T: Здесь стол и стул. Там окно. | Here are a table and a chair. There is a window.
+N*: Здесь стол. Там окно. | Here is a table. There is a window.
+T: Антон говорит: А где кухня? | Anton says: And where is the kitchen?
+N: Маша говорит: Кухня там. | Masha says: The kitchen is over there.
+T*: Где кухня? | Where is the kitchen?
+N: А где Борис? | And where is Boris?
+T: Борис здесь. Он на столе! | Boris is here. He is on the table!
+N: Маша говорит: Борис! Это мой стол! | Masha says: Boris! This is my table!
+T: Борис думает: нет, это мой стол. | Boris thinks: no, this is my table.
+N*: Это моё окно. | This is my window.
+T: И окно моё. Всё здесь моё, думает Борис. | And the window is mine. Everything here is mine, thinks Boris.
+words: дом = house, home; квартира = apartment; комната = room; кухня = kitchen; стол = table; стул = chair; окно = window; здесь = here; там = there; мой, моя, моё = my
+quiz: Which is right for «квартира»? | моя квартира | мой квартира | моё квартира
+quiz: Where is Boris? | on the table | in the kitchen | at the window
+quiz: What does «там» mean? | there | here | where
+
+== 5 | A1 | Семья | Family
+recap: Masha shows Anton a family photo: mom, dad, and grandma, who lives in a village. She has no brother, but she has Boris.
+N: Тёма, у тебя есть брат? | Tyoma, do you have a brother?
+T: Да, у меня есть брат. И сестра. | Yes, I have a brother. And a sister.
+N> У меня есть means "I have". Word for word: "by me there is".
+T*: У меня есть брат. | I have a brother.
+N: А у меня есть сестра. | And I have a sister.
+T: Маша говорит: Антон, это моя семья. | Masha says: Anton, this is my family.
+N: Это мама. Это папа. | This is mom. This is dad.
+T: А это бабушка. Она живёт в деревне. | And this is grandma. She lives in a village.
+N*: Это моя семья. | This is my family.
+T: Антон говорит: А у тебя есть брат? | Anton says: And do you have a brother?
+N: Маша говорит: Нет. У меня нет брата. | Masha says: No. I do not have a brother.
+T> For "I do not have", say У меня нет. The next word changes a little: брат becomes брата.
+N*: У меня нет брата. | I do not have a brother.
+T: Маша говорит: Но у меня есть кот! | Masha says: But I have a cat!
+N: Борис тоже моя семья. | Boris is my family too.
+T*: У меня есть кот. | I have a cat.
+words: семья = family; мама = mom; папа = dad; брат = brother; сестра = sister; бабушка = grandma; у меня есть = I have; у меня нет = I do not have; тоже = too, also
+quiz: How do you say "I have a sister"? | У меня есть сестра | Это моя сестра | У меня нет сестры
+quiz: Where does grandma live? | in a village | in Moscow | with Anton
+quiz: Does Masha have a brother? | no | yes, one | yes, two

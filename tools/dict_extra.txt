@@ -1,0 +1,24 @@
+# Words the OpenRussian data is missing or keeps without a meaning.
+# word with apostrophe stress = English | kind (n noun, v verb, a adjective, o other) | other forms, comma separated
+бу'ду = I will, I will be (future of быть) | o
+бу'дешь = you will, you will be | o
+бу'дет = he, she or it will be; there will be | o
+бу'дем = we will, we will be | o
+бу'дете = you will be (plural or polite) | o
+бу'дут = they will, they will be | o
+кем = whom, by whom (instrumental of кто) | o
+на'ми = us, with us (instrumental of мы) | o
+него' = him, it (after a preposition) | o
+неё = her, it (after a preposition) | o | нее
+тобо'й = you, with you (instrumental of ты) | o
+одна' = one (feminine); alone | o
+во = in, at (form of в before some words) | o
+гав = woof | o
+мя'у = meow | o
+по-ру'сски = in Russian | o
+Ма'ша = Masha (a name) | n | Ма'ши,Ма'ше,Ма'шу,Ма'шей
+Анто'н = Anton (a name) | n | Анто'на,Анто'ну,Анто'ном,Анто'не
+Бори'с = Boris (a name) | n | Бори'са,Бори'су,Бори'сом,Бори'се
+Ни'ка = Nika (a name) | n | Ни'ки,Ни'ке,Ни'ку,Ни'кой
+Тёма = Tyoma (a name) | n | Тёмы,Тёме,Тёму,Тёмой
+Ша'рик = Sharik (a dog's name) | n | Ша'рика,Ша'рику,Ша'риком,Ша'рике

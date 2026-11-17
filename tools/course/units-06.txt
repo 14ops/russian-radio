@@ -1,0 +1,121 @@
+# Units 26 to 30.
+
+== 26 | A2 | Завтра я буду | Plans: the future
+recap: Tomorrow Masha, Anton and Sharik will drive to grandma's village. Boris agrees to come because grandma will have fish.
+N: Тёма, что ты будешь делать завтра? | Tyoma, what will you do tomorrow?
+T: Завтра я буду отдыхать. | Tomorrow I will rest.
+N> For the future, use буду with the basic form of the verb: я буду, ты будешь, он будет.
+T*: Завтра я буду отдыхать. | Tomorrow I will rest.
+N: А я буду работать. | And I will work.
+T: Завтра суббота. Что будет делать Маша? | Tomorrow is Saturday. What will Masha do?
+N: Утром она поедет к бабушке. | In the morning she will go to grandma's.
+T> For one trip in the future, say пойду if you walk and поеду if you ride.
+N*: Я поеду к бабушке. | I will go to grandma's.
+T: Антон тоже поедет. И Шарик! | Anton will go too. And Sharik!
+N: В деревне они будут гулять и есть пироги'. | In the village they will walk and eat pies.
+T*: Мы будем гулять. | We will walk.
+N: Маша говорит: Борис, ты тоже поедешь. | Masha says: Boris, you are coming too.
+T: Борис не хочет. В машине будет Шарик! | Boris does not want to. Sharik will be in the car!
+N: Но у бабушки будет рыба. | But grandma will have fish.
+T: Борис думает. Хорошо. Я поеду. | Boris thinks. Fine. I will go.
+N*: Хорошо, я поеду. | Fine, I will go.
+words: я буду = I will; ты будешь = you will; он будет = he will; мы будем = we will; они будут = they will; поехать = to go (by transport, one trip); пирог = pie; завтра = tomorrow
+quiz: How do you say "I will rest"? | Я буду отдыхать | Я отдыхал | Я буду отдыхаю
+quiz: Where will Masha go in the morning? | to grandma's | to the cinema | to work
+quiz: Why does Boris agree to go? | Grandma will have fish | He likes the car | He loves Sharik
+
+== 27 | A2 | Кому? Маме! | To whom: the dative case
+recap: At grandma's. Masha gives grandma a hat and a cake, Anton helps in the garden, and grandma gives Boris fish.
+N: Тёма, кому ты звонишь? | Tyoma, who are you calling?
+T: Я звоню маме. | I am calling mom.
+N*: Я звоню маме. | I am calling mom.
+T> The person who gets something takes a new ending: мама, маме. Брат, брату.
+N: Все едут к бабушке: Маша, Антон, Шарик и Борис. | Everyone is going to grandma's: Masha, Anton, Sharik and Boris.
+T: Маша дарит бабушке шапку и торт. | Masha gives grandma a hat and a cake.
+N*: Маша дарит бабушке торт. | Masha gives grandma a cake.
+T: Бабушка говорит: Спасибо! Мне очень нравится шапка! | Grandma says: Thank you! I like the hat very much!
+N> Мне нравится means "I like it". Word for word: "it pleases me".
+T*: Мне нравится шапка. | I like the hat.
+N: Антон помогает бабушке в саду'. | Anton helps grandma in the garden.
+T: Бабушка говорит Маше: Какой хороший мальчик! | Grandma says to Masha: What a nice boy!
+N: Шарику нравится деревня. | Sharik likes the village.
+T: А Борису нравится бабушка. Она даёт Борису рыбу. | And Boris likes grandma. She gives Boris fish.
+N*: Борису нравится рыба. | Boris likes fish.
+T: Мне тоже нравится бабушка. | I like grandma too.
+N: Тёма! Тебе нравятся пироги'. | Tyoma! You like the pies.
+words: кому = to whom; звонить = to call; дарить = to give (a gift); помогать = to help; мне нравится = I like; тебе = to you; сад = garden; мальчик = boy; маме = to mom
+quiz: How do you say "I am calling mom"? | Я звоню маме | Я звоню мама | Я звоню мамой
+quiz: What does grandma like? | the hat | the dog | the car
+quiz: What does «Мне нравится» mean? | I like it | I need it | I have it
+
+== 28 | A2 | С кем? С дру'гом! | With whom: the instrumental case
+recap: Morning in the village. Sharik wants to play with Boris. After a long look, Boris plays with him. Now they are friends.
+N: Тёма, с кем ты обедаешь? | Tyoma, who are you having lunch with?
+T: Я обедаю с дру'гом. | I am having lunch with a friend.
+N*: Я обедаю с дру'гом. | I am having lunch with a friend.
+T> After с meaning "with", the ending changes: друг, с дру'гом. Мама, с мамой. Маша, с Машей.
+N: А я пью чай с лимоном и с сахаром. | And I drink tea with lemon and with sugar.
+T*: Чай с лимоном и с сахаром. | Tea with lemon and with sugar.
+N: В деревне утро. Маша гуляет с бабушкой. | It is morning in the village. Masha is walking with grandma.
+T: Антон играет с Шариком. | Anton is playing with Sharik.
+N*: Он играет с Шариком. | He is playing with Sharik.
+T: А Борис сидит под столом. Один. | And Boris is sitting under the table. Alone.
+N: Шарик идёт к Борису. Он хочет играть с котом! | Sharik comes up to Boris. He wants to play with the cat!
+T: Борис долго смотрит на Шарика. | Boris looks at Sharik for a long time.
+N: И вот Борис играет с Шариком! | And look: Boris is playing with Sharik!
+T*: Борис играет с Шариком. | Boris is playing with Sharik.
+N: Теперь они друзья. | Now they are friends.
+T: Маша говорит: Я не верю! | Masha says: I do not believe it!
+words: с кем = with whom; друг = friend; с дру'гом = with a friend; сахар = sugar; лимон = lemon; под столом = under the table; долго = for a long time; друзья = friends; один = alone
+quiz: How do you say "with a friend"? | с дру'гом | с друг | с друга
+quiz: Who plays with Sharik at the end? | Boris | grandma | Tyoma
+quiz: What does «Теперь они друзья» mean? | Now they are friends | They are at home now | They are hungry
+
+== 29 | A2 | Делал или сделал? | Process and result
+recap: Evening at grandma's. She cooked for two hours and made borscht and pies. Anton ate five pies. Boris looked at the fish for a long time, then ate it.
+N: Тёма, ты читал эту книгу? | Tyoma, have you read this book?
+T: Я читал её вчера весь вечер. | I was reading it all evening yesterday.
+N: И прочитал? | And did you finish it?
+T: Нет ещё. | Not yet.
+N> Читал is about the process: I was reading. Прочитал is about the result: I finished reading.
+T*: Я читал книгу. | I was reading the book.
+N*: Я прочитала книгу. | I finished the book. (a woman speaking)
+T: В деревне вечер. Бабушка готовила у'жин два часа'. | It is evening in the village. Grandma was cooking dinner for two hours.
+N: И вот она приготовила борщ и пироги'. | And now she has made borscht and pies.
+T*: Бабушка приготовила борщ. | Grandma has made borscht.
+N: Антон ел и ел. Он съел пять пирогов! | Anton ate and ate. He ate five pies!
+T: Маша писа'ла письмо маме. Она написа'ла: У нас всё хорошо! | Masha was writing a letter to mom. She wrote: All is well here!
+N*: Я написа'ла письмо. | I have written a letter. (a woman speaking)
+T: А что сделал Борис? | And what did Boris do?
+N: Борис долго смотрел на рыбу. | Boris looked at the fish for a long time.
+T: А пото'м он её съел. | And then he ate it.
+N: Вот это результат! | Now that is a result!
+words: читать, прочитать = to read, to finish reading; делать, сделать = to do, to get done; готовить, приготовить = to cook, to finish cooking; писа'ть, написа'ть = to write, to finish writing; есть, съесть = to eat, to eat up; письмо = letter; у'жин = dinner; результат = result
+quiz: Which one means "I finished the book"? | Я прочитал книгу | Я читал книгу | Я читаю книгу
+quiz: How many pies did Anton eat? | five | two | ten
+quiz: What did grandma make? | borscht and pies | pizza | fish soup
+
+== 30 | A2 | Путешествие | The trip home
+recap: Sunday. Everyone drives back to Moscow. Boris and Sharik sleep side by side. In summer they will all go to the sea by train.
+N: Сегодня последний уро'к курса. | Today is the last lesson of the course.
+T: Уже'? Я буду скучать! | Already? I will miss it!
+N: Воскресенье. Маша и Антон едут домой, в Москву. | Sunday. Masha and Anton are going home, to Moscow.
+T: Бабушка говорит: Приезжайте ещё! | Grandma says: Come again!
+N*: Приезжайте ещё! | Come again!
+T: Она дала Маше пироги', а Борису рыбу. | She gave Masha pies, and Boris fish.
+N: В машине Борис сидит рядом с Шариком. | In the car Boris sits next to Sharik.
+T: Они спят. Вместе! | They are sleeping. Together!
+N*: Мы едем домой. | We are going home.
+T: Антон говорит: Маша, куда мы поедем летом? | Anton says: Masha, where shall we go in summer?
+N: Маша говорит: Я хочу на море! | Masha says: I want to go to the sea!
+T*: Я хочу на море. | I want to go to the sea.
+N: Антон говорит: Отлично! Поедем на поезде. | Anton says: Great! We will go by train.
+T: А Борис и Шарик? | And Boris and Sharik?
+N: Они поедут с нами. Теперь они друзья! | They will come with us. They are friends now!
+T> You made it through all thirty lessons: the past, the future and all six cases. Well done!
+N*: Я говорю по-ру'сски! | I speak Russian!
+T: Молодец! До встречи на Повтори FM! | Well done! See you on Povtori FM!
+words: путешествие = trip, journey; последний = last; скучать = to miss, to be bored; приезжайте = come and visit (polite or plural); вместе = together; море = sea; поезд = train; по-ру'сски = in Russian; молодец = well done; до встречи = see you
+quiz: Where does Masha want to go in summer? | to the sea | to the village | to the cinema
+quiz: How will they travel in summer? | by train | by car | by plane
+quiz: What does «вместе» mean? | together | at home | again

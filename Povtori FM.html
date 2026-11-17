@@ -310,9 +310,33 @@ details.paste summary{cursor:pointer;font-weight:600;font-size:13.5px}
 .dl i{color:var(--ink-2);font-style:normal}
 .dl-h{font:700 10.5px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);padding:8px 0 2px}
 #dbgCount.bad{color:var(--bad)}
+/* v2.2: course list, review round, tap a word */
+.course-list{max-height:420px;overflow-y:auto}
+.cu .cn{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 4px;border-radius:12px;background:var(--well);font:700 11px var(--font-mono);margin-right:4px}
+.cu.done .cn{background:var(--good);color:var(--on-accent)}
+.cu.next{background:var(--hi);border-radius:8px;padding-inline:6px}
+.cu .wrow>.row{flex-wrap:nowrap;flex:none;gap:6px}
+.review{display:grid;gap:8px}
+.rev-card{border:1.5px solid var(--amber-lo);border-radius:12px;padding:10px 12px;display:grid;gap:10px}
+.rev-top{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.rev-word{margin:0;font:700 30px/1.2 var(--font-body);overflow-wrap:anywhere}
+.rev-en{margin:0;font:600 20px/1.3 var(--font-body);overflow-wrap:anywhere}
+.rev-ok{margin:0;color:var(--good);font-weight:600}
+.rev-bad{margin:0;color:var(--bad);font-weight:600}
+#logList .ru .w,#nowRu .w{cursor:pointer}
+#logList .ru .w:hover,#nowRu .w:hover{background:var(--hi)}
+.lex{position:fixed;z-index:30;width:min(360px,calc(100vw - 16px));max-height:min(70vh,520px);overflow:auto;background:var(--panel);color:var(--ink);border:1px solid var(--rule);border-radius:14px;box-shadow:0 18px 44px -18px rgba(0,0,0,.55);padding:12px 14px;display:grid;gap:8px}
+.lex.sheet{left:8px!important;right:8px;top:auto!important;bottom:calc(8px + env(safe-area-inset-bottom,0px));width:auto}
+.lex-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.lex-w{font:700 22px/1.2 var(--font-body);overflow-wrap:anywhere}
+.lex-e{display:grid;gap:4px;padding-top:8px;border-top:1px solid var(--rule)}
+.lex-head{margin:0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-weight:600;font-size:17px}
+.lex-en{margin:0}
+.lex-src{margin:0;font-size:11px;color:var(--ink-2)}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 <script src="app/anthropic-sdk.js"></script>
+<script src="data/course.js"></script>
 </head>
 <body>
 
@@ -416,6 +440,8 @@ details.paste summary{cursor:pointer;font-weight:600;font-size:13.5px}
             <label class="check"><input type="checkbox" id="optStress"> Show stress marks</label>
             <label class="check"><input type="checkbox" id="optAutoGame"> Surprise games</label>
             <label class="check"><input type="checkbox" id="optQuiz"> Quiz after each story</label>
+            <label class="check"><input type="checkbox" id="optCourse"> Course lessons on the radio</label>
+            <label class="check"><input type="checkbox" id="optCourseWords"> Course words go to my word list</label>
             <label class="field" style="min-width:150px">Repeat pause<select id="optGap"><option value="short">Short</option><option value="normal">Normal</option><option value="long">Long</option></select></label>
             <button type="button" class="btn small ghost" id="testVoices">Test voices</button>
           </div>
@@ -455,7 +481,8 @@ details.paste summary{cursor:pointer;font-weight:600;font-size:13.5px}
 
       <div class="panel" role="tabpanel" id="p-words" aria-labelledby="t-words" hidden>
         <h3><span data-ru>Мои́ слова́</span><small>Your words</small></h3>
-        <p class="hint">Add words in Russian or English. Each word comes back after 1, 3, 7 and 16 days, right before you would forget it. The hosts put due words into new stories and drills, and a quiz or dictation miss brings a word back sooner.</p>
+        <p class="hint">Add words in Russian or English, or tap any word in the transcript to look it up. When words are due, run a 2-minute review: a right answer moves a word to its next gap (1, 3, 7, 16 days), a miss brings it back sooner. The hosts also put due words into new stories and drills.</p>
+        <div class="review"><div class="row between"><button type="button" class="btn" id="revStart">Review due words</button><span class="fine" id="revInfo"></span></div><div class="rev-card" id="revCard" hidden></div></div>
         <form id="wordForm" class="row">
           <label class="sr" for="wordText">Words to add</label>
           <input id="wordText" placeholder="кошка, umbrella, магазин = shop" autocomplete="off">
@@ -510,6 +537,10 @@ details.paste summary{cursor:pointer;font-weight:600;font-size:13.5px}
       </div>
 
       <div class="panel" role="tabpanel" id="p-story" aria-labelledby="t-story" hidden>
+        <h3><span data-ru>Курс</span><small>Course</small></h3>
+        <p class="hint">30 lessons from A1 to A2, written by hand, with every stress mark checked against a dictionary. The radio plays the next lesson every other segment, then a 3-question quiz. Each lesson's words join your word list for review.</p>
+        <div class="row between"><button type="button" class="btn" id="cNext">Play lesson 1</button><span class="fine" id="cStats"></span></div>
+        <ol class="list course-list" id="cList"></ol>
         <h3 id="sTitle"></h3>
         <p class="hint" id="sPremise"></p>
         <form id="steerForm" class="row">
@@ -555,7 +586,7 @@ details.paste summary{cursor:pointer;font-weight:600;font-size:13.5px}
           <details class="news"><summary>Show as a table</summary><table class="tbl" id="prTable"></table></details>
         </figure>
         <ul class="list" id="prList"></ul>
-        <p class="fine">A day counts toward your streak with 5 minutes of listening, a finished quiz, or a dictation line. Words count as known once they pass the 7-day review.</p>
+        <p class="fine">A day counts toward your streak with 5 minutes of listening, a finished quiz, a dictation line, or 5 review answers. Words count as known once they pass the 7-day review.</p>
       </div>
     </aside>
   </main>
@@ -572,6 +603,7 @@ details.paste summary{cursor:pointer;font-weight:600;font-size:13.5px}
     </details>
   </footer>
 </div>
+<div class="lex" id="lex" role="dialog" aria-label="Word meaning" hidden></div>
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script>
@@ -681,6 +713,7 @@ const KINDS = {
   game: { ru: 'ИГРА', en: 'Guessing game', f: 103.6 },
   voice: { ru: 'ГОЛОС', en: 'Voice check', f: 106.4 },
   quiz: { ru: 'ВИКТОРИНА', en: 'Story quiz', f: 103.6 },
+  course: { ru: 'КУРС', en: 'Course lesson', f: 98.0 },
 };
 const pctOf = (f) => 6 + ((f - 88) / 20) * 88;
 const L = (who, ru, en) => ({ who, ru, en });
@@ -809,8 +842,14 @@ const WORD_IDEAS = ['ко́фе', 'метро́', 'дождь', 'друг', 'в�
 const PHRASE_IDEAS = ['Кот пьёт молоко́.', 'Приве́т! Как дела́?', 'Где моя́ ры́ба?', 'Ско́лько сто́ит?'];
 
 /* ---------- version and change log ---------- */
-const VERSION = '2.1.1';
+const VERSION = '2.2.0';
 const CHANGES = [
+  { v: '2.2.0', date: '2026-11-17', items: [
+    'Course: 30 hand-written lessons from A1 to A2, every stress mark checked against a dictionary. The radio plays the next lesson every other segment, each with a 3-question quiz, and the Story tab lists all 30.',
+    'Word review round: a 2-minute round in the Words tab. Hear a word and pick its meaning, or type the Russian for a meaning. Only right answers move a word to its next gap. Airing a word no longer counts as a review.',
+    'Tap a word: tap any Russian word in the transcript or on air for its meaning, its stress, and which form it is. Add it to your words in one tap. New words you type get their meaning and stress filled in from the same dictionary, offline.',
+    'USB helpers: double-click Start Povtori FM to open the radio, and Update Povtori FM to download only the files that changed. Update also repairs a copy with missing files.',
+  ] },
   { v: '2.1.1', date: '2026-11-09', items: [
     'Word review: a review day now runs from 4 in the morning to 4 in the morning, so a late-night session that crosses midnight counts a word once.',
     'Debug log: the AI voices line now says correctly where the voices load from.',
@@ -893,13 +932,14 @@ const LS = {
   set(k, v) { try { localStorage.setItem('povtori:' + k, JSON.stringify(v)); } catch (e) {} },
   del(k) { try { localStorage.removeItem('povtori:' + k); } catch (e) {} },
 };
-const SET = Object.assign({ mode: 'talk', speed: 1, enText: true, enVoice: false, stress: true, autoGame: true, gap: 'normal', vN: '', vT: '', vEN: '', vET: '', tab: 'inbox', engine: 'ai', aN: '', aT: '', writer: 'mini', claudeModel: 'claude-opus-5-5', ollamaUrl: 'http://localhost:11434', ollamaModel: 'qwen2.5:7b', level: 'A1', quiz: true, miniChat: 'auto' }, LS.get('settings', {}) || {});
+const SET = Object.assign({ mode: 'talk', speed: 1, enText: true, enVoice: false, stress: true, autoGame: true, gap: 'normal', vN: '', vT: '', vEN: '', vET: '', tab: 'inbox', engine: 'ai', aN: '', aT: '', writer: 'mini', claudeModel: 'claude-opus-5-5', ollamaUrl: 'http://localhost:11434', ollamaModel: 'qwen2.5:7b', level: 'A1', quiz: true, miniChat: 'auto', course: true, courseWords: true }, LS.get('settings', {}) || {});
 const saveSet = () => LS.set('settings', SET);
 
 const defaultStory = () => ({ id: 'masha', title: 'Ма́ша и Бори́с', premise: 'Masha, a student who just moved to Moscow, lives with Boris, her big ginger cat who loves milk and fish. Small everyday adventures: café, metro, market, weather, friends, food, and the neighbor’s dog.', episode: 0, recaps: [], words: [], requests: [] });
 const defaultGame = () => ({ score: 0, rounds: 0, streak: 0, best: 0, history: [], used: [] });
 const defaultProgress = () => ({ days: {}, best: 0, perfect: 0 });
-const DATA = { vocab: [], inbox: [], docs: [], story: defaultStory(), game: defaultGame(), archive: [], progress: defaultProgress() };
+const defaultCourse = () => ({ done: {}, quiz: {} });
+const DATA = { vocab: [], inbox: [], docs: [], story: defaultStory(), game: defaultGame(), archive: [], progress: defaultProgress(), course: defaultCourse() };
 const DOCTEXT = new Map();
 const S = { playing: false, started: false };
 
@@ -1738,6 +1778,7 @@ function finishSeg(seg) {
   if (DATA.vocab.length) Vocab.markUsed(m.used || [], m.gloss || [], seg.skipped ? '' : segText(seg), !seg.skipped);
   if (seg.kind === 'inbox' && m.qid) Inbox.answered(m.qid, m.takeaway);
   if (seg.kind === 'game') Game.end(seg);
+  if (seg.kind === 'course' && !seg.skipped) Course.complete(seg);
   if (!seg.offline && !seg.rerun && ['story', 'words', 'doc', 'inbox'].includes(seg.kind)) {
     DATA.archive.unshift({ kind: seg.kind, title: seg.title, lines: seg.lines, ts: Date.now() });
     DATA.archive = DATA.archive.slice(0, 12); Store.save('archive', DATA.archive);
@@ -1747,7 +1788,7 @@ function finishSeg(seg) {
 /* ---------- director: plays the queue forever ---------- */
 const REQUEUE = new Set(['line', 'gap', 'music', 'guess', 'call', 'wait', 'jingle', 'chime', 'quiz']);
 const D = {
-  queue: [], ready: [], run: null, cur: null, curSeg: null, lastLine: null, segN: 0, rot: 0, fillers: 0, offIdx: 0, recent: [],
+  queue: [], ready: [], run: null, cur: null, curSeg: null, lastLine: null, segN: 0, rot: 0, fillers: 0, offIdx: 0, recent: [], lastMain: '',
   play() {
     if (S.playing) return;
     S.playing = true; UI.playing(true); MediaKeys.on(); Dbg.info('Play');
@@ -1771,7 +1812,7 @@ const D = {
     const first = !LS.get('introDone', false);
     this.queue.push(...itemsFor(cloneSeg(first ? OFF.intro : OFF.welcome)));
     LS.set('introDone', true);
-    if (DATA.story.id === 'masha' && DATA.story.episode === 0) this.ready.push(cloneSeg(OFF.ep1));
+    if (DATA.story.id === 'masha' && DATA.story.episode === 0 && !Course.on()) this.ready.push(cloneSeg(OFF.ep1));
   },
   insertNow(items, ackTag) {
     if (ackTag) this.queue = this.queue.filter((it) => it.ack !== ackTag);
@@ -1819,6 +1860,8 @@ const D = {
   },
   refill() {
     Gen.maybePrefetch();
+    const lesson = Course.turn(Gen.inFlight() && this.fillers >= 2);
+    if (lesson) { this.beforeSeg(lesson); this.queue.push(...itemsFor(lesson)); UI.status(); return; }
     if (this.ready.length) { const seg = this.ready.shift(); this.beforeSeg(seg); this.queue.push(...itemsFor(seg)); Gen.maybePrefetch(); UI.status(); return; }
     if (Gen.inFlight()) {
       if (SET.mode === 'talk') Music.set(0.22, 1.2);
@@ -1896,7 +1939,8 @@ const D = {
   },
   onSeg(seg) {
     this.curSeg = seg; this.segN++;
-    Dbg.info('On air: ' + (KINDS[seg.kind] || KINDS.story).en + ' · ' + stripStress(seg.title || '') + ' (' + (seg.rerun ? 'rerun' : seg.mini ? 'mini AI' : seg.offline ? 'studio tape' : 'written live') + ')');
+    if (seg.kind !== 'quiz') this.lastMain = seg.kind;
+    Dbg.info('On air: ' + (KINDS[seg.kind] || KINDS.story).en + ' · ' + stripStress(seg.title || '') + ' (' + (seg.kind === 'course' ? 'course' : seg.rerun ? 'rerun' : seg.mini ? 'mini AI' : seg.offline ? 'studio tape' : 'written live') + ')');
     UI.segment(seg); UI.logSeg(seg);
     if (seg.kind === 'inbox' && seg.meta && seg.meta.qid) Inbox.setStatus(seg.meta.qid, 'onair');
     if (seg.kind === 'game') Game.begin(seg);
@@ -1987,6 +2031,7 @@ function ctxBlock() {
     words.length ? "Listener's own words. " + (due ? 'Words marked [DUE] are due for review today: use every [DUE] word at least twice, in the dictionary form or any natural form. Use the others only when natural' : 'Use a few when natural, prefer low counts') + ': ' + words.join('; ') : '',
     D.recent.length ? 'Recent segments: ' + D.recent.join(' | ') : '',
     last ? 'The last line on air was: "' + last + '"' : '',
+    Course.context(),
     SET.mode === 'music' ? 'Music mode is on: keep it short and bouncy.' : '',
   ].filter(Boolean).join('\n');
 }
@@ -2283,7 +2328,7 @@ const Inbox = {
 
 /* ---------- your words ---------- */
 const Vocab = {
-  save() { Store.save('vocab', DATA.vocab.slice(-300)); },
+  save() { Store.save('vocab', DATA.vocab.slice(-1000)); },
   parse(text) {
     const out = [];
     for (let part of String(text).split(/[\n,;]+/)) {
@@ -2303,7 +2348,14 @@ const Vocab = {
     const added = items.map((it) => ({ id: newId(), term: it.term, ru: it.ru, en: it.en, uses: 0, added: Date.now(), stage: 0, due: Date.now() }));
     DATA.vocab.push(...added); this.save(); rebuildMine(); UI.vocab();
     UI.toast(added.length === 1 ? 'Added. The hosts will use it.' : added.length + ' words added.');
-    const missing = added.filter((w) => !w.ru || !w.en || norm(w.ru) === norm(w.en));
+    const gap = (w) => !w.ru || !w.en || norm(w.ru) === norm(w.en) || (isCyr(w.ru) && !/\u0301/.test(w.ru) && syllables(w.ru) > 1);
+    let missing = added.filter(gap);
+    if (missing.length && await Lex.load()) {
+      let n = 0;
+      for (const w of missing) n += Lex.fill(w);
+      if (n) { this.save(); rebuildMine(); UI.vocab(); }
+      missing = added.filter((w) => !w.ru || !w.en || norm(w.ru) === norm(w.en));
+    }
     if (!missing.length || !Gen.available()) return;
     try {
       const arr0 = await Gen.ask(Prompts.fill(missing), { tier: 'quick' });
@@ -2326,9 +2378,30 @@ const Vocab = {
       if (gl) { if (!w.ru && isCyr(gl.ru)) { w.ru = gl.ru; changed = true; } if (isCyr(w.term) && !w.en && gl.en) { w.en = gl.en; changed = true; } }
       if (!counts) continue;
       const claimed = U.some((u) => keys.some((k) => u === k || u.includes(k) || (k.length > 4 && u.startsWith(k.slice(0, -2)))));
-      if (claimed || (text && hitsText(w, text))) { w.uses = (w.uses || 0) + 1; this.review(w, true); changed = true; }
+      if (claimed || (text && hitsText(w, text))) { w.uses = (w.uses || 0) + 1; changed = true; }
     }
     if (changed) { this.save(); rebuildMine(); UI.vocab(); }
+  },
+  addEntry(ru, en) {
+    const k = norm(stripStress(ru));
+    if (!k || DATA.vocab.some((w) => norm(stripStress(w.ru || w.term)) === k || norm(w.term) === k)) { UI.toast('Already on your list.'); return false; }
+    DATA.vocab.push({ id: newId(), term: ru, ru, en, uses: 0, added: Date.now(), stage: 0, due: Date.now() });
+    this.save(); rebuildMine(); UI.vocab(); UI.toast('Added to your words. It comes up in the next review.');
+    return true;
+  },
+  /* a finished course lesson adds its words, first due on the next review day */
+  addCourse(words, n) {
+    const have = new Set(DATA.vocab.map((w) => norm(stripStress(w.ru || w.term))));
+    const due = srsDue(Date.now(), 1), add = [];
+    for (const [ru, en] of words) {
+      const k = norm(stripStress(ru));
+      if (!k || have.has(k)) continue;
+      have.add(k);
+      add.push({ id: newId(), term: ru, ru, en, uses: 1, added: Date.now(), stage: 0, due, src: 'course', unit: n });
+    }
+    if (!add.length) return 0;
+    DATA.vocab.push(...add); this.save(); rebuildMine(); UI.vocab();
+    return add.length;
   },
   /* one review: on time and right moves the word up a stage, wrong drops it two stages and makes it due now */
   review(w, ok) {
@@ -2555,6 +2628,227 @@ const Story = {
   },
 };
 
+/* ---------- built-in course: 30 checked lessons from A1 to A2 (data/course.js) ---------- */
+const COURSE = Array.isArray(window.POVTORI_COURSE) ? window.POVTORI_COURSE : [];
+const Course = {
+  on() { return SET.course !== false && COURSE.length > 0; },
+  unit(n) { return COURSE.find((u) => u.n === n) || null; },
+  done(n) { return !!DATA.course.done[n]; },
+  count() { return COURSE.filter((u) => this.done(u.n)).length; },
+  nextN() { const u = COURSE.find((x) => !this.done(x.n)); return u ? u.n : 0; },
+  lastDone() { let best = null; for (const u of COURSE) if (this.done(u.n) && (!best || DATA.course.done[u.n] >= DATA.course.done[best.n])) best = u; return best; },
+  lines(u) { return u.lines.map((l) => (l[3] === 2 ? E(l[0], l[2]) : l[3] === 1 ? R(l[0], l[1], l[2]) : L(l[0], l[1], l[2]))); },
+  seg(n) {
+    const u = this.unit(n);
+    if (!u) return null;
+    return { kind: 'course', title: u.title, offline: true, course: u.n, lines: [E('N', 'Course lesson ' + u.n + ' of ' + COURSE.length + ': ' + u.topic + '.')].concat(this.lines(u)),
+      quiz: u.quiz.map((q) => ({ q: q[0], opts: q[1].slice(), ans: q[2] })), meta: { courseN: u.n, recap: u.recap } };
+  },
+  /* every other segment is the next lesson while lessons remain; force skips the alternation while the writer is slow */
+  turn(force) {
+    if (!this.on() || !this.nextN()) return null;
+    if (D.lastMain === 'course' && !force) return null;
+    if (D.queue.some((it) => it.seg && it.seg.kind === 'course') || D.ready.some((x) => x.kind === 'course')) return null;
+    return this.seg(this.nextN());
+  },
+  complete(seg) {
+    const u = this.unit(seg.course);
+    if (!u) return;
+    const first = !DATA.course.done[u.n];
+    if (first) DATA.course.done[u.n] = Date.now();
+    const added = SET.courseWords !== false ? Vocab.addCourse(u.words, u.n) : 0;
+    Store.save('course', DATA.course); this.paint();
+    Dbg.info('Course: lesson ' + u.n + (first ? ' done' : ' heard again') + (added ? ', ' + added + ' words added to your list for review' : ''));
+  },
+  play(n) {
+    const x = this.seg(n);
+    if (!x) return;
+    D.ready = D.ready.filter((y) => y.kind !== 'course');
+    D.ready.unshift(x);
+    UI.toast(S.playing ? 'Lesson ' + n + ' plays next.' : 'Lesson ' + n + ' coming up.');
+    UI.status();
+    if (!S.playing) D.play();
+  },
+  context() {
+    const done = COURSE.filter((u) => this.done(u.n));
+    if (!done.length) return '';
+    const words = [].concat(...done.map((u) => u.words.map((w) => stripStress(w[0])))).slice(-60);
+    return 'Course: the listener finished ' + done.length + ' of ' + COURSE.length + ' built-in lessons. Latest: ' + done.slice(-3).map((u) => u.topic).join('; ') + '. Words they learned there, good to recycle: ' + words.join(', ') + '.';
+  },
+  paint() { try { UI.course(); } catch (e) {} },
+};
+
+/* ---------- word review: a 2-minute round of due words; only a right answer moves a word to its next gap ---------- */
+const Review = {
+  on: false, list: [], cur: null, end: 0, right: 0, moved: 0, seen: new Set(), missed: new Set(), timer: 0, ctl: null, nextT: 0,
+  ruOf(w) { return w.ru || (isCyr(w.term) ? w.term : ''); },
+  enOf(w) { return isCyr(w.term) ? w.en || '' : w.en || w.term; },
+  usable(w) { const ru = this.ruOf(w), en = this.enOf(w); return !!(ru && en && norm(ru) !== norm(en) && !/the hosts will teach/.test(en)); },
+  due() { return vocabOrder().filter((w) => isDue(w) && this.usable(w)); },
+  start() {
+    const due = this.due();
+    if (!due.length) { this.paint(); UI.toast('Nothing is due right now.'); return; }
+    if (S.playing) D.pause();
+    wake(); AE.wake();
+    if (Music.on) Music.set(0, 0.2);
+    this.on = true; this.list = due.slice(0, 20); this.right = 0; this.moved = 0; this.seen = new Set(); this.missed = new Set();
+    this.end = performance.now() + 120000;
+    clearInterval(this.timer); this.timer = setInterval(() => UI.reviewTimer(), 500);
+    Dbg.info('Review: ' + this.list.length + ' due words');
+    UI.tab('words');
+    this.next();
+  },
+  next() {
+    clearTimeout(this.nextT);
+    if (!this.on) return;
+    const w = performance.now() < this.end ? this.list.shift() : null;
+    if (!w) { this.finish(); return; }
+    const type = (w.stage || 0) >= 2 && Math.random() < 0.5;
+    this.cur = { w, mode: type ? 'type' : 'pick', answered: false, ok: false, opts: type ? null : this.options(w) };
+    UI.reviewCard();
+    if (!type) this.say(false);
+  },
+  options(w) {
+    const right = this.enOf(w), seen = new Set([norm(right)]), pool = [];
+    for (const v of DATA.vocab) if (v !== w && this.usable(v)) pool.push(this.enOf(v));
+    for (const u of COURSE) for (const x of u.words) pool.push(x[1]);
+    const opts = [right];
+    for (const o of shuffle(pool)) { const k = norm(o); if (k && !seen.has(k)) { seen.add(k); opts.push(o); if (opts.length === 4) break; } }
+    const order = shuffle(opts.map((_, i) => i));
+    return { list: order.map((i) => opts[i]), ans: order.indexOf(0) };
+  },
+  async say(slow) {
+    const c = this.cur;
+    if (!c) return;
+    if (this.ctl) this.ctl.abort();
+    const ctl = new AbortController(); this.ctl = ctl;
+    wake(); AE.wake();
+    try { await Talk.ru(stripStress(this.ruOf(c.w)), 'N', ctl.signal, { slow: !!slow }); } catch (e) {}
+  },
+  pick(i) { const c = this.cur; if (!c || c.answered || c.mode !== 'pick') return; c.picked = i; this.grade(i === c.opts.ans); },
+  type(text) {
+    const c = this.cur;
+    if (!c || c.answered || c.mode !== 'type') return;
+    const exp = dkNorm(this.ruOf(c.w)), got = dkNorm(text || '');
+    if (!got) { UI.toast('Type the Russian first, or tap I do not know.'); return; }
+    c.typed = String(text).trim(); c.close = got !== exp && exp.length >= 5 && lev(got, exp) <= 1;
+    this.grade(got === exp || c.close);
+  },
+  giveUp() { const c = this.cur; if (!c || c.answered) return; c.typed = ''; this.grade(false); },
+  grade(ok) {
+    const c = this.cur, w = c.w, first = !this.seen.has(w.id);
+    c.answered = true; c.ok = ok;
+    this.seen.add(w.id);
+    if (first) {
+      const before = w.stage || 0;
+      Vocab.review(w, ok);
+      if (ok && w.stage > before) this.moved++;
+      if (ok) this.right++;
+      Progress.bump('rn'); if (ok) Progress.bump('rr');
+    }
+    if (ok) Sfx.chime(); else { Sfx.buzz(); if (first) { this.missed.add(w.id); this.list.push(w); } }
+    Vocab.save(); UI.vocab(); UI.reviewCard();
+    if (c.mode === 'type' || !ok) this.say(false);
+    if (ok) this.nextT = setTimeout(() => { if (this.cur === c) this.next(); }, c.mode === 'type' ? 1600 : 900);
+  },
+  finish() {
+    clearTimeout(this.nextT);
+    if (!this.on) return;
+    this.on = false; clearInterval(this.timer);
+    if (this.ctl) this.ctl.abort();
+    this.cur = null; Progress.save(); UI.reviewCard(); this.paint();
+    Dbg.info('Review done: ' + this.right + ' of ' + this.seen.size + ' right on the first try, ' + this.moved + ' words moved up');
+  },
+  close() { this.seen = new Set(); UI.reviewCard(); },
+  paint() { try { UI.review(); } catch (e) {} },
+};
+
+/* ---------- tap a word: meaning, form and stress from the OpenRussian dictionary (data/dict.js) ---------- */
+const LEX_SLOT = {
+  sg_nom: 'nominative singular', sg_gen: 'genitive singular', sg_dat: 'dative singular', sg_acc: 'accusative singular', sg_inst: 'instrumental singular', sg_prep: 'prepositional singular',
+  pl_nom: 'nominative plural', pl_gen: 'genitive plural', pl_dat: 'dative plural', pl_acc: 'accusative plural', pl_inst: 'instrumental plural', pl_prep: 'prepositional plural',
+  imperative_sg: 'command form for ты', imperative_pl: 'command form for вы', past_m: 'past tense for он', past_f: 'past tense for она', past_n: 'past tense for оно', past_pl: 'past tense for они',
+  presfut_sg1: 'я form', presfut_sg2: 'ты form', presfut_sg3: 'он and она form', presfut_pl1: 'мы form', presfut_pl2: 'вы form', presfut_pl3: 'они form',
+  comparative: 'comparative', short_m: 'short form for он', short_f: 'short form for она', short_n: 'short form for оно', short_pl: 'short form for они',
+};
+const LEX_CASE = { nom: 'nominative', gen: 'genitive', dat: 'dative', acc: 'accusative', inst: 'instrumental', prep: 'prepositional' };
+const LEX_G = { m: 'masculine', f: 'feminine', n: 'neuter', pl: 'plural' };
+const lexSlot = (s) => LEX_SLOT[s] || (/^decl_/.test(s) ? LEX_G[s.split('_')[1]] + ' ' + LEX_CASE[s.split('_')[2]] : s);
+const lexKey = (s) => String(s || '').toLowerCase().replace(/['\u0300\u0301]/g, '').replace(/ё/g, 'е');
+const Lex = {
+  map: null, d: null, loading: null, anchor: null,
+  load() {
+    if (this.map) return Promise.resolve(true);
+    if (!this.loading) this.loading = loadLocal('data/dict.js').then(() => { this.build(); return true; }).catch((e) => { this.loading = null; Dbg.warn('Dictionary did not load: ' + ((e && e.message) || e)); return false; });
+    return this.loading;
+  },
+  build() {
+    const d = window.POVTORI_DICT, map = new Map(), t0 = performance.now();
+    if (!d || !Array.isArray(d.e)) throw new Error('the dictionary file is damaged');
+    const add = (k, v) => { const a = map.get(k); if (!a) map.set(k, [v]); else if (a.length < 12) a.push(v); };
+    d.e.forEach((e, i) => {
+      add(lexKey(e[0]), [i, -1, e[0]]);
+      if (e[3]) e[3].split('|').forEach((part, si) => { if (part) part.split(',').forEach((f) => { const full = e[0].slice(0, parseInt(f[0], 36)) + f.slice(1); add(lexKey(full), [i, si, full]); }); });
+    });
+    this.d = d; this.map = map;
+    try { delete window.POVTORI_DICT; } catch (e) { window.POVTORI_DICT = undefined; }
+    Dbg.info('Dictionary ready: ' + d.e.length + ' words in ' + Math.round(performance.now() - t0) + ' ms');
+  },
+  find(word) {
+    if (!this.map) return [];
+    const k = lexKey(word), byEntry = new Map(), out = [];
+    for (const [i, si, form] of this.map.get(k) || []) {
+      let x = byEntry.get(i);
+      if (!x) {
+        const e = this.d.e[i], pos = e[2][0];
+        x = { word: e[0].replace(/'/g, '\u0301'), en: e[1], pos, info: e[2].slice(1), form: form.replace(/'/g, '\u0301'), slots: [] };
+        byEntry.set(i, x); out.push(x);
+      }
+      if (si >= 0) { const nm = lexSlot(this.d.slots[x.pos] ? this.d.slots[x.pos][si] : ''); if (nm && !x.slots.includes(nm) && x.slots.length < 3) x.slots.push(nm); }
+      else x.form = form.replace(/'/g, '\u0301');
+    }
+    const yo = /ё/i.test(word);
+    out.sort((a, b) => (yo ? (/ё/.test(b.form) ? 1 : 0) - (/ё/.test(a.form) ? 1 : 0) : 0));
+    return out.slice(0, 3);
+  },
+  reverse(en) {
+    const t = norm(en).replace(/^(a|an|the|to)\s+/, '');
+    if (!t || !this.d) return null;
+    const re = new RegExp('(^|[,;(]\\s*)(to\\s+|a\\s+|an\\s+|the\\s+)?' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '(\\s*[,;)]|$)', 'i');
+    const e = this.d.e.find((x) => x[2][0] !== 'o' && re.test(x[1])) || this.d.e.find((x) => re.test(x[1]));
+    return e ? { word: e[0].replace(/'/g, '\u0301'), en: e[1] } : null;
+  },
+  /* fills a new word's meaning or its stressed Russian form; returns how many fields it filled */
+  fill(w) {
+    let n = 0;
+    if (isCyr(w.term)) {
+      const h = this.find(w.term)[0];
+      if (!h) return 0;
+      if (!w.en) { w.en = h.en; n++; }
+      if (lexKey(h.word) === lexKey(w.term) && !/\u0301/.test(w.ru || '')) { w.ru = h.word; n++; }
+    } else if (!w.ru) {
+      const r = this.reverse(w.term);
+      if (r) { w.ru = r.word; n++; }
+    }
+    return n;
+  },
+  async open(span) {
+    const text = (span.textContent || '').trim();
+    if (!text || !isCyr(text)) return;
+    this.anchor = span;
+    UI.lex({ text, loading: !this.map, hits: [] });
+    const ok = await this.load();
+    if (this.anchor !== span) return;
+    UI.lex({ text, hits: ok ? this.find(text) : [], failed: !ok });
+  },
+  act(b) {
+    const a = b.dataset.lex;
+    if (a === 'close') { UI.lex(null); return; }
+    if (a === 'hear') { if (S.playing) D.pause(); wake(); AE.wake(); if (Music.on) Music.set(0, 0.2); Talk.ru(stripStress(b.dataset.w), 'N', null, {}).catch(() => {}); return; }
+    if (a === 'add' && Vocab.addEntry(b.dataset.ru, b.dataset.en)) { b.disabled = true; b.textContent = 'On your list ✓'; }
+  },
+};
+
 /* ---------- story quiz: 3 questions after each story ---------- */
 const Quiz = {
   cur: null,
@@ -2612,15 +2906,15 @@ const Quiz = {
     return qs;
   },
   start(seg) {
-    if (!SET.quiz || !seg || seg.kind !== 'story' || seg.skipped) return;
-    if (!seg.rerun && !(seg.meta && seg.meta.episode)) return;
+    if (!SET.quiz || !seg || seg.skipped || !['story', 'course'].includes(seg.kind)) return;
+    if (seg.kind === 'story' && !seg.rerun && !(seg.meta && seg.meta.episode)) return;
     let qs = (seg.quiz || []).map((x) => this.mix(x));
     if (qs.length < 3) qs = qs.concat(this.local(seg));
     qs = qs.slice(0, 3);
     if (qs.length < 2) return;
-    const q = { id: newId(), title: seg.title || '', qs: qs.map((x) => Object.assign(x, { picked: null })), done: false, right: 0, ts: Date.now() };
+    const q = { id: newId(), title: seg.title || '', qs: qs.map((x) => Object.assign(x, { picked: null })), done: false, right: 0, ts: Date.now(), course: seg.course || 0 };
     this.cur = q; UI.quiz();
-    Dbg.info('Quiz: ' + q.qs.length + ' questions about ' + stripStress(q.title) + ((seg.quiz || []).length ? ', written by ' + Writer.short() : ', built from the episode'));
+    Dbg.info('Quiz: ' + q.qs.length + ' questions about ' + stripStress(q.title) + (seg.kind === 'course' ? ', from the course' : (seg.quiz || []).length ? ', written by ' + Writer.short() : ', built from the episode'));
     const qseg = { kind: 'quiz', title: 'Виктори́на', offline: true, quizId: q.id };
     D.queue.unshift({ type: 'seg', seg: qseg }, ...QUIZ_LINES.intro.map((l) => mkLine(l, qseg, 'quiz')), { type: 'quiz', ms: SET.mode === 'music' ? 22000 : 32000, quiz: q, seg: qseg }, { type: 'segEnd', seg: qseg });
   },
@@ -2648,7 +2942,8 @@ const Quiz = {
     if (x.word) { const w = DATA.vocab.find((v) => v.id === x.word); if (w && Vocab.review(w, ok)) { Vocab.save(); UI.vocab(); } }
     if (q.qs.every((y) => y.picked != null)) {
       q.done = true;
-      DATA.game.history.unshift({ ru: 'Виктори́на', en: 'Story quiz, ' + q.right + ' of ' + q.qs.length, ok: q.right > 0, pts: q.right, ts: Date.now() });
+      DATA.game.history.unshift({ ru: 'Виктори́на', en: (q.course ? 'Lesson ' + q.course + ' quiz, ' : 'Story quiz, ') + q.right + ' of ' + q.qs.length, ok: q.right > 0, pts: q.right, ts: Date.now() });
+      if (q.course) { DATA.course.quiz[q.course] = Math.max(DATA.course.quiz[q.course] || 0, q.right); Store.save('course', DATA.course); Course.paint(); }
       DATA.game.history = DATA.game.history.slice(0, 30);
       if (!(D.cur && D.cur.it.type === 'quiz')) UI.toast(q.right + ' of ' + q.qs.length + ' right. Plus ' + q.right + (q.right === 1 ? ' point.' : ' points.'));
     }
@@ -2660,7 +2955,7 @@ const Quiz = {
 /* ---------- progress: minutes, lines, quiz and dictation, day streak ---------- */
 const Progress = {
   t: 0, last: 0, dirty: false, savedAt: 0,
-  day(ts) { const d = DATA.progress.days, k = dayKey(ts || Date.now()); return d[k] || (d[k] = { s: 0, l: 0, qn: 0, qr: 0, dn: 0, da: 0 }); },
+  day(ts) { const d = DATA.progress.days, k = dayKey(ts || Date.now()); return d[k] || (d[k] = { s: 0, l: 0, qn: 0, qr: 0, dn: 0, da: 0, rn: 0, rr: 0 }); },
   bump(f, n = 1) { const d = this.day(); d[f] = (d[f] || 0) + n; this.dirty = true; },
   start() { this.last = performance.now(); clearInterval(this.t); this.t = setInterval(() => this.tick(), 5000); },
   tick() {
@@ -2678,7 +2973,7 @@ const Progress = {
     DATA.progress.best = Math.max(DATA.progress.best || 0, this.streak());
     Store.save('progress', DATA.progress);
   },
-  active(d) { return !!d && ((d.s || 0) >= 300 || (d.qn || 0) >= 3 || (d.dn || 0) >= 1); },
+  active(d) { return !!d && ((d.s || 0) >= 300 || (d.qn || 0) >= 3 || (d.dn || 0) >= 1 || (d.rn || 0) >= 5); },
   streak() {
     const days = DATA.progress.days;
     let t = Date.now(), n = 0;
@@ -2687,7 +2982,7 @@ const Progress = {
     return n;
   },
   totals() {
-    const o = { s: 0, l: 0, qn: 0, qr: 0, dn: 0, da: 0 };
+    const o = { s: 0, l: 0, qn: 0, qr: 0, dn: 0, da: 0, rn: 0, rr: 0 };
     for (const d of Object.values(DATA.progress.days)) for (const k in o) o[k] += d[k] || 0;
     return o;
   },
@@ -2721,6 +3016,7 @@ const Dict = {
       seen.add(k); out.push({ ru: l.ru, en: l.en || '', who: l.who === 'T' ? 'T' : 'N', src });
     };
     for (let i = LOG.length - 1; i >= 0 && out.length < 60; i--) add(LOG[i], 'heard on air today');
+    for (const u of COURSE) if (Course.done(u.n) || u.n === Course.nextN()) for (const l of Course.lines(u)) add(l, 'course lesson ' + u.n);
     for (const a of DATA.archive) for (const l of a.lines || []) add(l, stripStress(a.title || 'an earlier episode'));
     for (const s of [OFF.ep1, OFF.cafe, OFF.count].concat(isA2() ? [OFF_A2.past, OFF_A2.cases] : [])) for (const l of s.lines) add(l, 'studio tape · ' + stripStress(s.title));
     return out;
@@ -2771,18 +3067,20 @@ const Dict = {
     UI.dictResult(r, acc, award);
   },
   show() { if (this.cur) UI.dictResult(null, null); },
-  insert(ch) {
-    const el = $('#dkText'), v = el.value;
-    const s = el.selectionStart != null ? el.selectionStart : v.length, e = el.selectionEnd != null ? el.selectionEnd : v.length;
-    if (ch === '\b') {
-      if (s !== e) { el.value = v.slice(0, s) + v.slice(e); el.setSelectionRange(s, s); }
-      else if (s > 0) { el.value = v.slice(0, s - 1) + v.slice(s); el.setSelectionRange(s - 1, s - 1); }
-      return;
-    }
-    el.value = v.slice(0, s) + ch + v.slice(e);
-    el.setSelectionRange(s + ch.length, s + ch.length);
-  },
+  insert(ch) { kbInsert($('#dkText'), ch); },
 };
+/* types a letter (or deletes one for '\b') at the cursor of a text box; the on-screen Russian keyboards use it */
+function kbInsert(el, ch) {
+  const v = el.value;
+  const s = el.selectionStart != null ? el.selectionStart : v.length, e = el.selectionEnd != null ? el.selectionEnd : v.length;
+  if (ch === '\b') {
+    if (s !== e) { el.value = v.slice(0, s) + v.slice(e); el.setSelectionRange(s, s); }
+    else if (s > 0) { el.value = v.slice(0, s - 1) + v.slice(s); el.setSelectionRange(s - 1, s - 1); }
+    return;
+  }
+  el.value = v.slice(0, s) + ch + v.slice(e);
+  el.setSelectionRange(s + ch.length, s + ch.length);
+}
 
 /* ---------- voice check: measure, rate, put on air ---------- */
 function targetInfo(t) {
@@ -3484,7 +3782,8 @@ const MiniAI = {
       if (r.title) topic = r.title;
     } else {
       const prev = DATA.archive.find((a) => a.kind === 'story' && a.lines && a.lines.length);
-      const prompt = miniHead() + miniEp(OFF.ep1.title.replace(/^.*?\.\s*/, ''), OFF.ep1.lines, 'кот, молоко, рыба') + (a2 ? miniEp('Вчера в парке', MINI_PAST, 'парк, чай') : miniEp('Маша в кафе', MINI_CAFE, 'кафе, кофе')) +
+      const cu = Course.lastDone();
+      const prompt = miniHead() + (cu ? miniEp(cu.title.replace(/^.*?\.\s*/, ''), Course.lines(cu), cu.words.slice(0, 3).map((x) => stripStress(x[0])).join(', ')) : miniEp(OFF.ep1.title.replace(/^.*?\.\s*/, ''), OFF.ep1.lines, 'кот, молоко, рыба')) + (a2 ? miniEp('Вчера в парке', MINI_PAST, 'парк, чай') : miniEp('Маша в кафе', MINI_CAFE, 'кафе, кофе')) +
         (prev ? miniEp(String(prev.title || '').replace(/^.*?\.\s*/, ''), prev.lines) : '') + 'Episode: ' + topic + '\n' + (words.length ? 'Words: ' + words.join(', ') + '\n' : '');
       let text = '';
       for (let round = 0; round < 2 && lines.length < 9; round++) {
@@ -3549,7 +3848,7 @@ const TRANSLIT = { а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'yo
 const translit = (s) => Array.from(String(s || '')).map((c) => { const l = c.toLowerCase(), t = TRANSLIT[l]; return t == null ? c : c === l ? t : t.charAt(0).toUpperCase() + t.slice(1); }).join('');
 const Export = {
   busy: false,
-  can(seg) { return !!seg && ['story', 'words', 'doc', 'inbox'].includes(seg.kind) && segRuLines(seg).length > 0; },
+  can(seg) { return !!seg && ['story', 'words', 'doc', 'inbox', 'course'].includes(seg.kind) && segRuLines(seg).length > 0; },
   fileName(seg) { return ('Povtori FM - ' + translit(stripStress(seg.title || 'episode'))).replace(/[^\x20-\x7E]+/g, '').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 90) + '.mp3'; },
   async encoder() {
     try { if (!window.lamejs) await loadScript('app/lame.min.js'); } catch (e) {}
@@ -3749,11 +4048,11 @@ const UI = {
   segment(seg) {
     const k = KINDS[seg.kind] || KINDS.story;
     $('#needle').style.left = pctOf(k.f) + '%';
-    $$('.st-btn').forEach((b) => b.classList.toggle('on', b.dataset.kind === seg.kind));
+    $$('.st-btn').forEach((b) => b.classList.toggle('on', b.dataset.kind === (seg.kind === 'course' ? 'story' : seg.kind)));
     $('#readout').textContent = k.f.toFixed(1).replace('.', ',') + ' МГц';
     $('#segKind').textContent = k.ru;
     $('#segTitle').innerHTML = renderRu(seg.title || '', { words: false }).html;
-    $('#segSrc').textContent = seg.rerun ? 'rerun' : seg.mini ? 'local AI · ' + (seg.model || 'mini') + ' · may contain mistakes' : seg.offline ? 'studio tape' : 'live · written by ' + (Writer.kind() === 'ollama' ? 'Ollama' : 'Claude');
+    $('#segSrc').textContent = seg.kind === 'course' ? 'course · lesson ' + seg.course + ' of ' + COURSE.length + ' · checked Russian' : seg.rerun ? 'rerun' : seg.mini ? 'local AI · ' + (seg.model || 'mini') + ' · may contain mistakes' : seg.offline ? 'studio tape' : 'live · written by ' + (Writer.kind() === 'ollama' ? 'Ollama' : 'Claude');
     MediaKeys.seg(seg);
   },
   playing(on) {
@@ -3775,7 +4074,7 @@ const UI = {
   log(it) {
     const i = LOG.push(it) - 1, li = document.createElement('li');
     li.className = 'll ' + (it.who === 'T' ? 't' : 'n') + (it.lang === 'en' ? ' en-only' : '');
-    const body = it.lang === 'en' ? '<p class="ru">' + renderMixed(it.en) + '</p>' : '<p class="ru" lang="ru">' + renderRu(it.ru, { words: false }).html + '</p>' + (it.en ? '<p class="en">' + esc(it.en) + '</p>' : '');
+    const body = it.lang === 'en' ? '<p class="ru">' + renderMixed(it.en) + '</p>' : '<p class="ru" lang="ru">' + renderRu(it.ru).html + '</p>' + (it.en ? '<p class="en">' + esc(it.en) + '</p>' : '');
     const acts = it.lang === 'en' ? '' : '<button type="button" class="ib" data-act="say" data-i="' + i + '" aria-label="Hear this line again, slowly">' + ICON.play + '</button><button type="button" class="ib" data-act="practice" data-i="' + i + '" aria-label="Practice this line in Voice">' + ICON.mic + '</button>';
     li.innerHTML = '<span class="who">' + (it.who === 'T' ? 'Тёма' : 'Ника') + '</span><div>' + body + '</div><div class="acts">' + acts + '</div>';
     this.appendLog(li);
@@ -3785,7 +4084,7 @@ const UI = {
   logSeg(seg) {
     const li = document.createElement('li'); li.className = 'ld';
     const si = SEGLOG.push(seg) - 1;
-    li.innerHTML = '<span>' + esc((KINDS[seg.kind] || KINDS.story).ru) + '</span><b>' + renderRu(seg.title || '', { words: false }).html + '</b><span>' + (seg.rerun ? 'rerun' : seg.offline ? 'studio tape' : 'live') + '</span>' +
+    li.innerHTML = '<span>' + esc((KINDS[seg.kind] || KINDS.story).ru) + '</span><b>' + renderRu(seg.title || '', { words: false }).html + '</b><span>' + (seg.kind === 'course' ? 'lesson ' + seg.course + ' of ' + COURSE.length : seg.rerun ? 'rerun' : seg.offline ? 'studio tape' : 'live') + '</span>' +
       (Export.can(seg) ? '<button type="button" class="x" data-save="l' + si + '" aria-label="Save this segment as an MP3">Save MP3</button>' : '');
     this.appendLog(li);
   },
@@ -3911,6 +4210,7 @@ const UI = {
     const c = Vocab.counts();
     $('#wordStats').textContent = list.length ? c.due + ' due today · ' + c.learning + ' learning · ' + c.known + ' known' : '';
     badge('#bWords', c.due);
+    this.review();
     if ($('#p-prog') && !$('#p-prog').hidden) this.progress();
   },
   docsHint() { const el = $('#docNote'); if (el && !el.textContent && Gen.ready && !(Gen.limits && Gen.limits.images)) el.textContent = 'Photos need Claude as the writer. Text, PDF and Word files work offline.'; },
@@ -3968,9 +4268,12 @@ const UI = {
     $$('#logList [data-save]').forEach((b) => { b.disabled = busy; });
   },
   saveNote(t) { this.saveMsg = t; const el = $('#saveNote'); if (el) el.textContent = t; if (!$('#p-story') || $('#p-story').hidden) this.toast(t); },
-  kb() {
+  kb(sel = '#dkKb', input = 'dkText') {
+    const box = $(sel);
+    if (!box) return;
+    box.dataset.for = input;
     const key = (k, cls, label, aria) => '<button type="button" class="key' + (cls ? ' ' + cls : '') + '" data-k="' + esc(k) + '"' + (aria ? ' aria-label="' + aria + '"' : '') + '>' + esc(label || k) + '</button>';
-    $('#dkKb').innerHTML = RU_KB.map((row) => '<div class="kr">' + Array.from(row).map((c) => key(c)).join('') + '</div>').join('') +
+    box.innerHTML = RU_KB.map((row) => '<div class="kr">' + Array.from(row).map((c) => key(c)).join('') + '</div>').join('') +
       '<div class="kr">' + key(' ', 'wide', 'space', 'Space') + key('BS', 'mid', '⌫', 'Delete the letter before the cursor') + '</div>';
   },
   dict() {
@@ -4028,9 +4331,101 @@ const UI = {
     const row = (k, v) => '<li><div class="wrow"><span>' + k + '</span><b>' + v + '</b></div></li>';
     $('#prList').innerHTML = row('Your words', c.total ? c.due + ' due today · ' + c.learning + ' learning · ' + c.known + ' known' : 'none yet') +
       row('Story quiz', t.qn ? t.qr + ' of ' + t.qn + ' right (' + Math.round((t.qr / t.qn) * 100) + '%)' : 'no answers yet') +
+      row('Course', COURSE.length ? Course.count() + ' of ' + COURSE.length + ' lessons' + (Object.keys(DATA.course.quiz).length ? ', quiz average ' + (Object.values(DATA.course.quiz).reduce((a, b) => a + b, 0) / Object.keys(DATA.course.quiz).length).toFixed(1) + ' of 3' : '') : 'missing') +
+      row('Word review', t.rn ? t.rr + ' of ' + t.rn + ' right' : 'no rounds yet') +
       row('Dictation', t.dn ? t.dn + ' lines, ' + Math.round((t.da / t.dn) * 100) + '% average' : 'no lines yet') +
       row('Lines heard', t.l) + row('Game points', DATA.game.score) + row('Best streak', Math.max(DATA.progress.best || 0, streak) + ' days') +
       row('Level', isA2() ? 'A2: past tense and cases' : 'A1: basics');
+  },
+  course() {
+    const box = $('#cList');
+    if (!box) return;
+    if (!COURSE.length) { $('#cStats').textContent = 'The course file is missing. Run Update Povtori FM, or download the app again.'; $('#cNext').disabled = true; box.innerHTML = ''; return; }
+    const n = Course.nextN(), done = Course.count();
+    $('#cNext').disabled = false;
+    $('#cNext').textContent = n ? 'Play lesson ' + n : 'All done. Play lesson 1 again';
+    $('#cStats').textContent = done + ' of ' + COURSE.length + ' lessons done' + (SET.course === false ? ' · off on the radio' : '');
+    box.innerHTML = COURSE.map((u) => {
+      const d = Course.done(u.n), q = DATA.course.quiz[u.n];
+      return '<li class="cu' + (d ? ' done' : '') + (u.n === n ? ' next' : '') + '"><div class="wrow"><span><b class="cn" aria-label="' + (d ? 'Lesson ' + u.n + ', done' : 'Lesson ' + u.n) + '">' + (d ? '✓' : u.n) + '</b> <span lang="ru">' + renderRu(u.title.replace(/^\S+ \d+\.\s*/, ''), { words: false }).html + '</span> <span class="w-en">' + esc(u.topic) + ' · ' + esc(u.level) + (q != null ? ' · quiz ' + q + ' of 3' : '') + '</span></span><span class="row"><button type="button" class="btn small ghost" data-cplay="' + u.n + '">Play</button><button type="button" class="x" data-save="c' + u.n + '" aria-label="Save lesson ' + u.n + ' as an MP3">MP3</button></span></div></li>';
+    }).join('');
+  },
+  review() {
+    const b = $('#revStart');
+    if (!b) return;
+    const n = Review.due().length;
+    b.disabled = Review.on || !n;
+    b.textContent = n ? 'Review ' + n + (n === 1 ? ' due word' : ' due words') : 'Nothing due';
+    const next = DATA.vocab.filter((w) => !isDue(w) && Review.usable(w)).sort((x, y) => x.due - y.due)[0];
+    const days = next ? Math.max(1, Math.ceil((next.due - Date.now()) / DAY)) : 0;
+    $('#revInfo').textContent = n ? 'A 2-minute round. Right answers move a word to its next gap.' : next ? 'Next word is due ' + (days === 1 ? 'tomorrow' : 'in ' + days + ' days') + '.' : DATA.vocab.length ? 'A word needs Russian and a meaning before it can be reviewed.' : 'Add words, or finish a course lesson, to start reviewing.';
+  },
+  reviewCard() {
+    const box = $('#revCard'), c = Review.cur;
+    if (!c) {
+      if (!Review.seen.size) { box.hidden = true; box.innerHTML = ''; return; }
+      const more = Review.due().length;
+      box.hidden = false;
+      box.innerHTML = '<div class="rev-top"><span class="pill s-answered">Round done</span></div><p><b>' + Review.right + ' of ' + Review.seen.size + ' right on the first try.</b> ' + Review.moved + (Review.moved === 1 ? ' word moved to its next gap' : ' words moved to their next gap') + (Review.missed.size ? ', and ' + Review.missed.size + (Review.missed.size === 1 ? ' comes back sooner' : ' come back sooner') : '') + '.</p><div class="row">' + (more ? '<button type="button" class="btn small" data-rev="again">Review ' + more + ' more</button>' : '') + '<button type="button" class="btn small ghost" data-rev="close">Close</button></div>';
+      return;
+    }
+    const w = c.w, ru = Review.ruOf(w), en = Review.enOf(w);
+    let h = '<div class="rev-top"><span class="pill s-onair">Review</span><span class="fine" id="revTimer"></span><button type="button" class="x" data-rev="stop">End round</button></div>';
+    if (c.mode === 'pick') {
+      h += '<p class="rev-word" lang="ru">' + renderRu(ru, { words: false }).html + '</p><div class="row"><button type="button" class="btn small ghost" data-rev="hear">Hear it</button><button type="button" class="btn small ghost" data-rev="slow">Slower</button></div><p class="fine">What does it mean?</p><div class="opts">' +
+        c.opts.list.map((o, i) => {
+          const st = !c.answered ? '' : i === c.opts.ans ? ' ok' : i === c.picked ? ' bad' : '';
+          const mk = !c.answered ? '' : i === c.opts.ans ? '<span class="mk">✓ right</span>' : i === c.picked ? '<span class="mk">✗ your pick</span>' : '';
+          return '<button type="button" class="opt' + st + '" data-ropt="' + i + '"' + (c.answered ? ' disabled' : '') + '>' + mk + esc(o) + '</button>';
+        }).join('') + '</div>';
+    } else {
+      h += '<p class="fine">Type the Russian for:</p><p class="rev-en">' + esc(en) + '</p>';
+      if (!c.answered) h += '<form class="row" id="revForm"><label class="sr" for="revText">The Russian word</label><input id="revText" lang="ru" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Type it in Russian"><button class="btn" type="submit">Check</button></form><div class="kb" id="revKb" role="group" aria-label="Russian keyboard"></div><div class="row"><button type="button" class="btn small ghost" data-rev="giveup">I do not know</button></div>';
+      else h += '<p class="rev-word" lang="ru">' + renderRu(ru, { words: false }).html + '</p><p class="' + (c.ok ? 'rev-ok' : 'rev-bad') + '">' + (c.ok ? (c.close ? '✓ Right, with one letter off. Check the spelling.' : '✓ Right!') : '✗ ' + (c.typed ? 'You typed «' + esc(c.typed) + '».' : 'Here it is.')) + '</p>';
+    }
+    if (c.answered && !c.ok) h += '<div class="row"><button type="button" class="btn small" data-rev="next">Next</button></div>';
+    box.hidden = false; box.innerHTML = h;
+    if (c.mode === 'type' && !c.answered) this.kb('#revKb', 'revText');
+    this.reviewTimer();
+  },
+  reviewTimer() {
+    const el = $('#revTimer');
+    if (!el || !Review.on) return;
+    const sec = Math.max(0, Math.ceil((Review.end - performance.now()) / 1000));
+    el.textContent = Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0') + ' left · ' + Review.list.length + ' to go';
+  },
+  lex(st) {
+    const box = $('#lex');
+    if (!st) { box.hidden = true; box.innerHTML = ''; Lex.anchor = null; return; }
+    const head = st.hits && st.hits.length ? st.hits[0].form : st.text;
+    let h = '<div class="lex-top"><b class="lex-w" lang="ru">' + renderRu(head, { words: false }).html + '</b><button type="button" class="x" data-lex="close" aria-label="Close">✕</button></div>';
+    const add = (ru, en) => { const on = DATA.vocab.some((w) => lexKey(w.ru || w.term) === lexKey(ru)); return '<button type="button" class="btn small" data-lex="add" data-ru="' + esc(ru) + '" data-en="' + esc(en) + '"' + (on ? ' disabled' : '') + '>' + (on ? 'On your list ✓' : 'Add to my words') + '</button>'; };
+    if (st.loading) h += '<p class="fine">Looking it up…</p>';
+    else if (st.failed) h += '<p class="fine">The dictionary file is missing (data/dict.js). Run Update Povtori FM, or download the app again.</p>';
+    else if (!st.hits.length) h += '<p class="fine">Not in the dictionary. It might be a name or a rare form.</p>';
+    else {
+      h += st.hits.map((x) => {
+        const pos = { n: 'noun', v: 'verb', a: 'adjective' }[x.pos] || '';
+        const g = x.pos === 'n' ? ({ m: ', masculine', f: ', feminine', n: ', neuter' }[x.info[0]] || '') : x.pos === 'v' ? ({ i: ', imperfective', p: ', perfective' }[x.info[0]] || '') : '';
+        const form = x.slots.length && lexKey(x.form) !== lexKey(x.word) ? '<p class="fine"><span lang="ru">' + renderRu(x.form, { words: false }).html + '</span> is the ' + esc(x.slots.join(' or ')) + ' of <span lang="ru">' + renderRu(x.word, { words: false }).html + '</span>.</p>' : x.slots.length && x.slots[0] !== 'nominative singular' && x.slots[0] !== 'masculine nominative' ? '<p class="fine">Form: ' + esc(x.slots.join(' or ')) + '.</p>' : '';
+        return '<div class="lex-e"><p class="lex-head"><span lang="ru">' + renderRu(x.word, { words: false }).html + '</span>' + (pos ? '<span class="pill s-queued">' + pos + g + '</span>' : '') + '</p><p class="lex-en">' + esc(x.en) + '</p>' + form + '<div class="row"><button type="button" class="btn small ghost" data-lex="hear" data-w="' + esc(x.word) + '">Hear it</button>' + add(x.word, x.en) + '</div></div>';
+      }).join('');
+    }
+    h += '<p class="lex-src">Dictionary: OpenRussian.org, CC BY-SA 4.0</p>';
+    box.innerHTML = h; box.hidden = false;
+    this.lexPlace();
+  },
+  lexPlace() {
+    const box = $('#lex'), a = Lex.anchor;
+    if (!box || box.hidden || !a) return;
+    if (innerWidth < 600) { box.classList.add('sheet'); box.style.left = ''; box.style.top = ''; return; }
+    box.classList.remove('sheet');
+    if (!a.isConnected) return;
+    const r = a.getBoundingClientRect(), bw = box.offsetWidth, bh = box.offsetHeight;
+    let top = r.bottom + 8;
+    if (top + bh > innerHeight - 8) top = Math.max(8, r.top - bh - 8);
+    box.style.left = clamp(r.left + r.width / 2 - bw / 2, 8, Math.max(8, innerWidth - bw - 8)) + 'px';
+    box.style.top = top + 'px';
   },
   dbg() {
     const c = Dbg.counts(), sum = $('#dbgCount');
@@ -4090,7 +4485,7 @@ const UI = {
     $('#vOut').appendChild(box);
   },
 };
-function rerenderText() { applyStatic(); UI.chips(); UI.vChips(); UI.vocab(); UI.game(); UI.story(); UI.inbox(); UI.quiz(); UI.saves(); UI.changelog(); if (Dict.cur) UI.dict(); if (D.cur && D.cur.it.type === 'line') UI.line(D.cur.it); }
+function rerenderText() { applyStatic(); UI.chips(); UI.vChips(); UI.vocab(); UI.game(); UI.story(); UI.inbox(); UI.quiz(); UI.saves(); UI.changelog(); UI.course(); if (Review.cur) UI.reviewCard(); if (Dict.cur) UI.dict(); if (D.cur && D.cur.it.type === 'line') UI.line(D.cur.it); }
 function setLevel(lv) {
   if (SET.level === lv) return;
   SET.level = lv; saveSet(); UI.level(); UI.saves();
@@ -4100,6 +4495,7 @@ function setLevel(lv) {
 }
 function saveFor(key) {
   if (key[0] === 'l') return SEGLOG[+key.slice(1)] || null;
+  if (key[0] === 'c') return Course.seg(+key.slice(1));
   if (key[0] === 'a') { const a = DATA.archive[+key.slice(1)]; return a ? { kind: a.kind, title: a.title, lines: a.lines } : null; }
   const tapes = { ep1: OFF.ep1, cafe: OFF.cafe, count: OFF.count, past: OFF_A2.past, cases: OFF_A2.cases };
   return tapes[key.slice(1)] ? cloneSeg(tapes[key.slice(1)]) : null;
@@ -4206,8 +4602,35 @@ function bind() {
   $('#dkNext').addEventListener('click', () => { Dict.next(); Dict.play(false); });
   $('#dkShow').addEventListener('click', () => Dict.show());
   $('#dkForm').addEventListener('submit', (e) => { e.preventDefault(); Dict.check($('#dkText').value); });
-  $('#dkKb').addEventListener('mousedown', (e) => { if (e.target.closest('.key')) e.preventDefault(); });
-  $('#dkKb').addEventListener('click', (e) => { const k = e.target.closest('.key'); if (k) Dict.insert(k.dataset.k === 'BS' ? '\b' : k.dataset.k); });
+  document.addEventListener('mousedown', (e) => { if (e.target.closest('.kb .key')) e.preventDefault(); });
+  document.addEventListener('click', (e) => {
+    const k = e.target.closest('.kb .key');
+    if (k) { const inp = $('#' + (k.closest('.kb').dataset.for || 'dkText')); if (inp) kbInsert(inp, k.dataset.k === 'BS' ? '\b' : k.dataset.k); return; }
+    const w = e.target.closest('#logList .ru .w, #nowRu .w');
+    if (w) { Lex.open(w); return; }
+    const lb = e.target.closest('#lex [data-lex]');
+    if (lb) { Lex.act(lb); return; }
+    if (!$('#lex').hidden && !e.target.closest('#lex')) UI.lex(null);
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('#lex').hidden) UI.lex(null); });
+  window.addEventListener('scroll', () => UI.lexPlace(), true);
+  window.addEventListener('resize', () => UI.lexPlace());
+  $('#cNext').addEventListener('click', () => { wake(); Course.play(Course.nextN() || 1); });
+  $('#cList').addEventListener('click', (e) => {
+    const p = e.target.closest('[data-cplay]'); if (p) { wake(); Course.play(+p.dataset.cplay); return; }
+    const sv = e.target.closest('[data-save]'); if (sv && !sv.disabled) Export.mp3(saveFor(sv.dataset.save));
+  });
+  $('#optCourse').addEventListener('change', (e) => { SET.course = e.target.checked; saveSet(); UI.course(); Dbg.info('Settings: course lessons ' + (SET.course ? 'on' : 'off')); });
+  $('#optCourseWords').addEventListener('change', (e) => { SET.courseWords = e.target.checked; saveSet(); });
+  $('#revStart').addEventListener('click', () => Review.start());
+  $('#revCard').addEventListener('click', (e) => {
+    const o = e.target.closest('[data-ropt]'); if (o && !o.disabled) { Review.pick(+o.dataset.ropt); return; }
+    const b = e.target.closest('[data-rev]'); if (!b) return;
+    const a = b.dataset.rev;
+    if (a === 'hear') Review.say(false); else if (a === 'slow') Review.say(true); else if (a === 'next') Review.next(); else if (a === 'giveup') Review.giveUp();
+    else if (a === 'stop') Review.finish(); else if (a === 'again') Review.start(); else if (a === 'close') Review.close();
+  });
+  $('#revCard').addEventListener('submit', (e) => { if (e.target.id === 'revForm') { e.preventDefault(); Review.type($('#revText').value); } });
   const plot = $('#prBars');
   const tipShow = (e) => {
     const b = e.target.closest('.bar'), tip = $('#prTip'); if (!b || !tip) return;
@@ -4238,7 +4661,7 @@ function bind() {
 async function boot() {
   Dbg.info('Povtori FM v' + VERSION + ' started ' + (location.protocol === 'file:' ? 'from a folder' : 'at ' + location.host) + ' · ' + (navigator.userAgentData && navigator.userAgentData.brands ? navigator.userAgentData.brands.map((b) => b.brand + ' ' + b.version).filter((b) => !/Not/.test(b)).join(', ') : navigator.userAgent));
   applyStatic();
-  $('#optEnVoice').checked = SET.enVoice; $('#optStress').checked = SET.stress; $('#optAutoGame').checked = SET.autoGame; $('#optGap').value = SET.gap; $('#optEngine').value = SET.engine; $('#optQuiz').checked = SET.quiz;
+  $('#optEnVoice').checked = SET.enVoice; $('#optStress').checked = SET.stress; $('#optAutoGame').checked = SET.autoGame; $('#optGap').value = SET.gap; $('#optEngine').value = SET.engine; $('#optQuiz').checked = SET.quiz; $('#optCourse').checked = SET.course !== false; $('#optCourseWords').checked = SET.courseWords !== false;
   UI.speed(); UI.en(); applyMode(); UI.chips(); UI.vChips(); UI.level(); UI.kb(); UI.changelog(); UI.miniModel();
   MediaKeys.init();
   $('#vTarget').value = PHRASE_IDEAS[0];
@@ -4254,7 +4677,8 @@ async function boot() {
   Voice.init();
   Gen.get();
   await Store.init();
-  const [vocab, inbox, docs, story, game, archive, progress] = await Promise.all(['vocab', 'inbox', 'docs', 'story', 'game', 'archive', 'progress'].map((k) => Store.load(k, null)));
+  const [vocab, inbox, docs, story, game, archive, progress, course] = await Promise.all(['vocab', 'inbox', 'docs', 'story', 'game', 'archive', 'progress', 'course'].map((k) => Store.load(k, null)));
+  if (course && typeof course === 'object') DATA.course = { done: Object.assign({}, course.done), quiz: Object.assign({}, course.quiz) };
   if (Array.isArray(vocab)) DATA.vocab = vocab.filter((w) => w && w.term).map(srs);
   if (progress && typeof progress === 'object' && progress.days && typeof progress.days === 'object') DATA.progress = Object.assign(defaultProgress(), progress);
   if (Array.isArray(inbox)) DATA.inbox = inbox.filter((q) => q && q.q).map((q) => (['writing', 'ready', 'onair'].includes(q.status) ? Object.assign({}, q, { status: 'queued' }) : q));
@@ -4263,10 +4687,10 @@ async function boot() {
   if (game && typeof game === 'object') DATA.game = Object.assign(defaultGame(), game);
   if (Array.isArray(archive)) DATA.archive = archive.filter((a) => a && Array.isArray(a.lines));
   rebuildMine();
-  UI.inbox(); UI.vocab(); UI.docs(); UI.game(); UI.story(); UI.footer(); UI.saves(); UI.dictStats();
+  UI.inbox(); UI.vocab(); UI.docs(); UI.game(); UI.story(); UI.footer(); UI.saves(); UI.dictStats(); UI.course(); UI.review();
   if (SET.tab === 'prog') UI.progress();
   if (SET.tab === 'dict') Dict.next();
-  if (!S.started) { UI.segment({ kind: 'story', title: DATA.story.episode ? 'Next: Эпизо́д ' + (DATA.story.episode + 1) + ' · ' + DATA.story.title : DATA.story.title, offline: true }); UI.preview(); }
+  if (!S.started) { const nu = Course.on() && Course.unit(Course.nextN()); UI.segment(nu ? { kind: 'course', course: nu.n, title: 'Next: ' + nu.title, offline: true } : { kind: 'story', title: DATA.story.episode ? 'Next: Эпизо́д ' + (DATA.story.episode + 1) + ' · ' + DATA.story.title : DATA.story.title, offline: true }); UI.preview(); }
   if (S.playing) Inbox.process();
   Progress.start();
   Dbg.info('Loaded your data: ' + DATA.vocab.length + ' words, story episode ' + DATA.story.episode + ', ' + DATA.docs.length + ' docs, storage ' + Store.mode + ', level ' + SET.level);

@@ -1,0 +1,120 @@
+# Units 11 to 15.
+
+== 11 | A1 | В городе | Finding your way
+recap: Anton is new in the neighborhood. Masha tells him where the shop, the pharmacy, the metro and the park are.
+N: Антон новый сосед. Он говорит: Маша, где магазин? | Anton is the new neighbor. He says: Masha, where is the shop?
+T: Маша говорит: Магазин рядом. Вот он. | Masha says: The shop is nearby. There it is.
+N*: Где магазин? | Where is the shop?
+T: А где аптека? | And where is the pharmacy?
+N: Аптека там. Иди прямо, пото'м направо. | The pharmacy is over there. Go straight, then right.
+T*: Прямо, пото'м направо. | Straight, then right.
+N> Налево is "to the left", направо is "to the right", прямо is "straight".
+T: А метро? Метро далеко? | And the metro? Is the metro far?
+N: Нет, метро близко. Иди прямо, пото'м налево. | No, the metro is close. Go straight, then left.
+T*: Метро далеко? | Is the metro far?
+N: А где парк? | And where is the park?
+T: Парк рядом. Шарик любит парк! | The park is nearby. Sharik loves the park!
+N: Антон говорит: Спасибо, Маша! | Anton says: Thank you, Masha!
+T: Маша говорит: Пожалуйста! | Masha says: You are welcome!
+N> Пожалуйста means "please", and also "you are welcome".
+T> To ask a stranger, start with Скажите, пожалуйста.
+N*: Скажите, пожалуйста, где метро? | Excuse me, where is the metro?
+words: магазин = shop; аптека = pharmacy; парк = park; метро = metro; рядом = nearby; далеко = far; близко = close; прямо = straight; налево = to the left; направо = to the right; скажите, пожалуйста = excuse me, tell me please
+quiz: What does «направо» mean? | to the right | to the left | straight
+quiz: Is the metro far? | no, it is close | yes, very far | there is no metro
+quiz: What else does «пожалуйста» mean? | you are welcome | goodbye | excuse me
+
+== 12 | A1 | В магазине | Shopping for food
+recap: Masha buys milk, bread and cheese. The fish costs five hundred rubles, but Boris is waiting at home, so she buys it too.
+N: Маша в магазине. | Masha is in the shop.
+T: Она говорит: Здравствуйте! У вас есть молоко? | She says: Hello! Do you have milk?
+N*: У вас есть молоко? | Do you have milk?
+T: Да, есть. Что ещё? | Yes, we do. What else?
+N: Маша говорит: Дайте, пожалуйста, хлеб и сыр. | Masha says: Bread and cheese, please.
+T*: Дайте, пожалуйста, хлеб. | Bread, please.
+N> Дайте, пожалуйста is how you ask for something in a shop. Word for word: "give, please".
+T: А рыба есть? | And is there fish?
+N: Есть. Рыба сто'ит пятьсот рублей. | There is. The fish costs five hundred rubles.
+T: Пятьсот рублей? Это дорого! | Five hundred rubles? That is expensive!
+N*: Это дорого! | That is expensive!
+T: Маша думает. До'ма Борис. Борис ждёт. | Masha thinks. Boris is at home. Boris is waiting.
+N: Маша говорит: Хорошо. И рыбу, пожалуйста. | Masha says: OK. And the fish, please.
+T: Сколько всё сто'ит? | How much is everything?
+N: Семьсот рублей. | Seven hundred rubles.
+T*: Сколько всё сто'ит? | How much is everything?
+N: Борис очень дорого'й кот! | Boris is a very expensive cat!
+words: хлеб = bread; сыр = cheese; у вас есть = do you have (polite); дайте = give me (polite); ещё = more, else; дорого = expensive; сто = one hundred; пятьсот = five hundred; всё = everything
+quiz: How do you ask a seller for bread? | Дайте, пожалуйста, хлеб | Я хлеб | Хлеб где?
+quiz: How much is the fish? | 500 rubles | 100 rubles | 700 rubles
+quiz: What does «дорого» mean? | expensive | cheap | tasty
+
+== 13 | A1 | Сколько времени? | Telling the time
+recap: Masha oversleeps. Boris wakes her at nine, and she makes it to her ten o'clock class.
+N: Тёма, сколько времени? | Tyoma, what time is it?
+T: Сейчас два часа'. | It is two o'clock now.
+N*: Сколько времени? | What time is it?
+T> One o'clock is час. With two, three and four, say часа'. From five on, say часов.
+N: Час. Два часа'. Пять часов. | One o'clock. Two o'clock. Five o'clock.
+T*: Сейчас пять часов. | It is five o'clock now.
+N: Утро. Семь часов. Маша спит. | Morning. Seven o'clock. Masha is sleeping.
+T: Восемь часов. Маша спит. | Eight o'clock. Masha is sleeping.
+N: Девять часов! Борис говорит: мяу! | Nine o'clock! Boris says: meow!
+T: Маша говорит: Ой! Уже' девять! Я опаздываю! | Masha says: Oh no! It is nine already! I am late!
+N*: Я опаздываю! | I am running late!
+T: Когда уро'к? Уро'к в десять часов. | When is the class? The class is at ten o'clock.
+N> For "at" a time, put в in front: в десять часов.
+T*: Уро'к в десять часов. | The class is at ten o'clock.
+N: Маша идёт очень быстро. | Masha walks very fast.
+T: Десять часов. Маша в университете. Ура! | Ten o'clock. Masha is at the university. Hooray!
+N: А Борис опять спит. | And Boris is sleeping again.
+words: сколько времени = what time is it; час = hour, o'clock; сейчас = now; уже' = already; когда = when; уро'к = lesson, class; опаздывать = to be late; быстро = fast; опять = again
+quiz: How do you say "at ten o'clock"? | в десять часов | десять час | на десять часа'
+quiz: Why is Masha in a hurry? | She is late for class | She is hungry | Boris ran away
+quiz: Which is right for 2? | два часа' | два часов | два час
+
+== 14 | A1 | Дни недели | Days of the week
+recap: Masha studies on Monday and works in a café on Tuesday and Wednesday. On Saturday she, Anton and Sharik are going to the park.
+N: Тёма, какой сегодня день? | Tyoma, what day is it today?
+T: Сегодня пятница! Ура! | Today is Friday! Hooray!
+N*: Какой сегодня день? | What day is it today?
+T: Понедельник, вторник, среда. | Monday, Tuesday, Wednesday.
+N: Четверг, пятница. | Thursday, Friday.
+T: Суббота и воскресенье! | Saturday and Sunday!
+N*: Суббота и воскресенье. | Saturday and Sunday.
+T: Маша говорит: В понедельник я в университете. | Masha says: On Monday I am at the university.
+N: Во вторник и в сре'ду я работаю в кафе. | On Tuesday and on Wednesday I work in a café.
+T> For "on" a day, use в: в понедельник. Some endings change: среда, в сре'ду. Суббота, в субботу.
+N*: В субботу я отдыхаю. | On Saturday I rest.
+T: Антон говорит: Маша, что ты делаешь в субботу? | Anton says: Masha, what are you doing on Saturday?
+N: Маша говорит: В субботу я иду в парк. | Masha says: On Saturday I am going to the park.
+T: Антон говорит: Я тоже! И Шарик тоже! | Anton says: Me too! And Sharik too!
+N*: Что ты делаешь в субботу? | What are you doing on Saturday?
+T: А завтра суббота! | And tomorrow is Saturday!
+N: Борис не рад. Он не любит Шарика. | Boris is not happy. He does not like Sharik.
+words: сегодня = today; завтра = tomorrow; день = day; понедельник = Monday; вторник = Tuesday; среда = Wednesday; четверг = Thursday; пятница = Friday; суббота = Saturday; воскресенье = Sunday
+quiz: What day comes after «пятница»? | суббота | четверг | среда
+quiz: What does Masha do on Saturday? | She goes to the park | She works in a café | She sleeps all day
+quiz: How do you say "on Wednesday"? | в сре'ду | в среда | на среде'
+
+== 15 | A1 | Погода | Weather
+recap: It is cold and rainy. Masha goes to the park without a hat, although her mom calls to warn her. Mom was right.
+N: Тёма, какая сегодня погода? | Tyoma, what is the weather like today?
+T: Сегодня холодно. Идёт дождь. | It is cold today. It is raining.
+N*: Какая сегодня погода? | What is the weather like today?
+T> In Russian, rain "goes": идёт дождь. Snow too: идёт снег.
+N*: Идёт дождь. | It is raining.
+T: Зимой в Москве холодно. Идёт снег. | In winter it is cold in Moscow. It snows.
+N: А летом тепло. Иногда жарко. | And in summer it is warm. Sometimes it is hot.
+T*: Зимой холодно, а летом тепло. | In winter it is cold, and in summer it is warm.
+N: Сегодня суббота. Маша идёт в парк. | Today is Saturday. Masha is going to the park.
+T: Мама звонит: Маша, сегодня холодно! Где твоя шапка? | Mom calls: Masha, it is cold today! Where is your hat?
+N: Маша говорит: Мама, мне не холодно! | Masha says: Mom, I am not cold!
+T> Мне холодно means "I am cold". Word for word: "to me it is cold".
+N*: Мне холодно. | I am cold.
+T: В па'рке дождь. Маша думает: мама права'. | It is raining in the park. Masha thinks: mom is right.
+N: А Борис до'ма. Ему тепло. | And Boris is at home. He is warm.
+T*: Сегодня тепло. | It is warm today.
+words: погода = weather; холодно = cold; тепло = warm; жарко = hot; дождь = rain; снег = snow; зимой = in winter; летом = in summer; иногда = sometimes; шапка = hat
+quiz: How do you say "It is raining"? | Идёт дождь | Дождь холодно | Это дождь
+quiz: What is winter like in Moscow? | cold, with snow | warm | hot
+quiz: What does «Мне холодно» mean? | I am cold | It is cold today | The weather is bad

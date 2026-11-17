@@ -1,0 +1,119 @@
+# Units 6 to 10.
+
+== 6 | A1 | Считаем! | Numbers and age
+recap: The hosts count to ten. Masha counts fish for Boris. Everyone says how old they are: Boris is five.
+N: Давай считать! Один, два, три. | Let us count! One, two, three.
+T: Четыре, пять, шесть. | Four, five, six.
+N: Семь, восемь, девять, десять! | Seven, eight, nine, ten!
+T*: Один, два, три, четыре, пять. | One, two, three, four, five.
+N*: Шесть, семь, восемь, девять, десять. | Six, seven, eight, nine, ten.
+T: Маша считает: одна рыба, две рыбы, три рыбы. | Masha counts: one fish, two fish, three fish.
+N: Борис тоже считает. Он очень рад! | Boris counts too. He is very happy!
+T: Сколько? Три рыбы! | How many? Three fish!
+N*: Сколько? | How many?
+T> After two, three and four the word changes a little: две рыбы. For now, only listen.
+N: Тёма, сколько тебе лет? | Tyoma, how old are you?
+T: Мне двадцать лет. А тебе? | I am twenty. And you?
+N: Мне тоже двадцать! | I am twenty too!
+T*: Сколько тебе лет? | How old are you?
+N*: Мне двадцать лет. | I am twenty years old.
+T: А Борису пять лет. | And Boris is five.
+N: Пять лет? Он большой мальчик! | Five? He is a big boy!
+words: один = one; два = two; три = three; четыре = four; пять = five; шесть = six; семь = seven; восемь = eight; девять = nine; десять = ten; сколько = how many, how much; сколько тебе лет = how old are you
+quiz: What number is «семь»? | seven | six | eight
+quiz: How do you ask "How old are you?" | Сколько тебе лет? | Как тебя зовут? | Как дела'?
+quiz: How old is Boris? | five | three | ten
+
+== 7 | A1 | В кафе | Ordering in a café
+recap: Masha and Anton order coffee with milk and tea with lemon in a café. The coffee costs one hundred rubles.
+N: Маша и Антон в кафе. | Masha and Anton are in a café.
+T: Маша говорит: Я хочу кофе. | Masha says: I want coffee.
+N: Антон говорит: А я хочу чай. | Anton says: And I want tea.
+T*: Я хочу кофе. | I want coffee.
+N> Add пожалуйста to be polite: Кофе, пожалуйста.
+T*: Кофе, пожалуйста. | Coffee, please.
+N: Маша говорит: Кофе с молоком, пожалуйста. | Masha says: Coffee with milk, please.
+T: Антон говорит: И чай с лимоном. | Anton says: And tea with lemon.
+N*: Чай с лимоном, пожалуйста. | Tea with lemon, please.
+T: Маша говорит: Сколько сто'ит кофе? | Masha says: How much is the coffee?
+N: Сто рублей. | One hundred rubles.
+T*: Сколько сто'ит? | How much is it?
+N: Тёма, а что хочешь ты? | Tyoma, and what do you want?
+T: Я хочу пельмени! | I want pelmeni!
+N: Утром? В кафе? | In the morning? In a café?
+T: Я всегда хочу пельмени. Это очень вкусно! | I always want pelmeni. They are very tasty!
+N*: Очень вкусно! | Very tasty!
+words: кафе = café; кофе = coffee; чай = tea; я хочу = I want; пожалуйста = please; с молоком = with milk; с лимоном = with lemon; сколько сто'ит = how much is it; рубль = ruble; вкусно = tasty
+quiz: How do you order politely? | Кофе, пожалуйста | Я кофе | Где кофе?
+quiz: What does Anton want? | tea with lemon | coffee with milk | pelmeni
+quiz: How much is the coffee? | 100 rubles | 10 rubles | 200 rubles
+
+== 8 | A1 | Я люблю | Likes and dislikes
+recap: Tyoma loves coffee, Nika loves tea. Masha loves music and books, Anton loves football. Sharik likes Boris, but Boris does not like Sharik.
+N: Тёма, что ты любишь? | Tyoma, what do you love?
+T: Я люблю кофе. И пельмени, конечно. | I love coffee. And pelmeni, of course.
+N*: Я люблю кофе. | I love coffee.
+T: А ты? Ты любишь кофе? | And you? Do you love coffee?
+N: Нет, я не люблю кофе. Я люблю чай. | No, I do not like coffee. I love tea.
+T*: Я не люблю кофе. | I do not like coffee.
+N> Не before the verb makes it negative: я люблю, я не люблю.
+T: Маша любит музыку и книги. | Masha loves music and books.
+N: Антон любит футбол. | Anton loves football.
+T: А Борис любит рыбу. | And Boris loves fish.
+N*: Борис любит рыбу. | Boris loves fish.
+T> After "love", рыба becomes рыбу: the ending а changes to у. Музыка, музыку.
+N*: Ты любишь музыку? | Do you love music?
+T: Шарик любит Бориса. | Sharik loves Boris.
+N: А Борис не любит Шарика! | But Boris does not like Sharik!
+T: Ой. Это проблема. | Uh-oh. That is a problem.
+words: любить = to love, to like; я люблю = I love; ты любишь = you love; не = not; конечно = of course; музыка = music; книга = book; футбол = football; проблема = problem
+quiz: How do you say "I do not like coffee"? | Я не люблю кофе | Я люблю не кофе | Я кофе нет
+quiz: What does Boris love? | fish | music | football
+quiz: After «люблю», the word «рыба» becomes... | рыбу | рыба | рыбы
+
+== 9 | A1 | Что ты делаешь? | Everyday verbs
+recap: Evening. Masha listens to music, Anton works, Sharik plays, and Boris does nothing at all.
+N: Тёма, что ты делаешь? | Tyoma, what are you doing?
+T: Я читаю. | I am reading.
+N: Что ты читаешь? | What are you reading?
+T: Я читаю меню. | I am reading the menu.
+N*: Что ты делаешь? | What are you doing?
+T> Russian has one present tense. Я читаю means both "I read" and "I am reading".
+N: Вечер. Что делает Маша? | Evening. What is Masha doing?
+T: Маша слушает музыку. | Masha is listening to music.
+N*: Я слушаю музыку. | I am listening to music.
+T: Антон работает. Он программист. | Anton is working. He is a programmer.
+N: А Шарик играет. | And Sharik is playing.
+T*: Я работаю. А ты? | I am working. And you?
+N: А что делает Борис? | And what is Boris doing?
+T: Борис ничего не делает. Он отдыхает. | Boris is doing nothing. He is resting.
+N*: Я отдыхаю. | I am resting.
+T> The endings: я читаю, ты читаешь, он читает. Most verbs that end in ать work this way.
+N: Я тоже хочу отдыхать! | I want to rest too!
+words: делать = to do; читать = to read; слушать = to listen; работать = to work; играть = to play; отдыхать = to rest; ничего = nothing; вечер = evening; меню = menu
+quiz: What does «Что ты делаешь?» mean? | What are you doing? | How are you? | Where are you?
+quiz: What is Anton doing? | working | reading | resting
+quiz: Which is right? | ты читаешь | ты читаю | ты читает
+
+== 10 | A1 | Мой день | My day
+recap: Masha's day: breakfast, university, lunch in a café, home in the evening. Boris sleeps all day and plays at night.
+N: Утром я пью чай. | In the morning I drink tea.
+T: А я утром пью кофе. Пото'м я завтракаю. | And in the morning I drink coffee. Then I have breakfast.
+N*: Утром я пью чай. | In the morning I drink tea.
+T: Маша тоже завтракает. Пото'м она идёт в университет. | Masha has breakfast too. Then she goes to the university.
+N*: Я иду в университет. | I am going to the university.
+T> Идти means "to go on foot": я иду, ты идёшь, он идёт.
+N: Днём Маша обедает в кафе. | In the afternoon Masha has lunch in a café.
+T: А Борис обедает до'ма. | And Boris has lunch at home.
+N*: Я обедаю до'ма. | I have lunch at home.
+T: Вечером Маша идёт домой. | In the evening Masha goes home.
+N> До'ма means "at home". Домой means "homeward", when you are on your way there.
+T: Она у'жинает и читает. | She has dinner and reads.
+N: А Борис? | And Boris?
+T: Борис спит. Утром, днём и вечером. | Boris sleeps. In the morning, in the afternoon and in the evening.
+N*: Вечером я отдыхаю. | In the evening I rest.
+T: А ночью Борис играет! | And at night Boris plays!
+words: утром = in the morning; днём = in the afternoon; вечером = in the evening; ночью = at night; завтракать = to have breakfast; обедать = to have lunch; у'жинать = to have dinner; идти = to go (on foot); до'ма = at home; домой = home (direction); спать = to sleep; пото'м = then
+quiz: What does «вечером» mean? | in the evening | in the morning | at night
+quiz: Where does Masha have lunch? | in a café | at home | at the university
+quiz: When does Boris play? | at night | in the morning | in the afternoon

@@ -1,0 +1,120 @@
+# Units 21 to 25. Level A2 starts here.
+
+== 21 | A2 | Что было вчера? | The past tense
+recap: Yesterday Masha was at the university and worked in the café. In the evening she and Anton walked in the park with Sharik. Boris slept and ate.
+N: Тёма, что ты делал вчера? | Tyoma, what did you do yesterday?
+T: Вчера я работал. Пото'м я был в кафе. | Yesterday I worked. Then I was at a café.
+N> The past is simple. Drop ть from the verb. Add л for a man, ла for a woman, ли for several people.
+T*: Вчера я работал. | Yesterday I worked.
+N: А я вчера работала и читала. | And yesterday I worked and read.
+T*: Вчера я работала. | Yesterday I worked. (a woman speaking)
+N: А что делала Маша? | And what did Masha do?
+T: Утром Маша была в университете. | In the morning Masha was at the university.
+N: Днём она работала в кафе. | In the afternoon she worked at the café.
+T: Вечером Маша и Антон гуляли в па'рке. | In the evening Masha and Anton walked in the park.
+N*: Они гуляли в па'рке. | They walked in the park.
+T: Шарик тоже гулял. Он играл и бегал. | Sharik walked too. He played and ran around.
+N: А что делал Борис? | And what did Boris do?
+T: Борис был до'ма. Он спал, ел и опять спал. | Boris was at home. He slept, ate and slept again.
+N*: Он был до'ма. | He was at home.
+T: Хороший был день! | It was a good day!
+words: вчера = yesterday; был, была, были = was, were; делал = did; работал = worked; гулять = to walk, to stroll; бегать = to run around; ел = ate; спал = slept
+quiz: How does a woman say "I worked"? | Я работала | Я работал | Я работали
+quiz: Where were Masha and Anton in the evening? | in the park | at the café | at home
+quiz: What did Boris do all day? | He slept and ate | He played in the park | He worked
+
+== 22 | A2 | Где ты был? | Trips there and back
+recap: On Saturday Masha went to the shop. On Sunday she went to see her grandma in the village, two hours away.
+N: Тёма, где ты был в субботу? | Tyoma, where were you on Saturday?
+T: В субботу я был на рынке. | On Saturday I was at the market.
+N: А я ходила в кино. | And I went to the cinema.
+T> Two ways to say where you went: я был в кино, or я ходил в кино. Ходил means there and back.
+N*: Я ходила в кино. | I went to the cinema. (a woman speaking)
+T*: Я был на рынке. | I was at the market.
+N: А куда ходила Маша? | And where did Masha go?
+T: В субботу Маша ходила в магазин. | On Saturday Masha went to the shop.
+N: Она купила хлеб, сыр и молоко. | She bought bread, cheese and milk.
+T: А в воскресенье она ездила к бабушке. | And on Sunday she went to see grandma.
+N> For a trip by transport, there and back, say ездил or ездила.
+T*: Она ездила к бабушке. | She went to see grandma.
+N: Бабушка живёт в деревне. Это далеко. | Grandma lives in a village. It is far.
+T: Маша ехала два часа'. | Masha traveled for two hours.
+N: Бабушка была очень рада. | Grandma was very happy.
+T: А Борис никуда не ходил. | And Boris did not go anywhere.
+N*: Куда ты ходил? | Where did you go?
+words: ходить = to go (on foot, there and back); ездить = to go (by transport, there and back); куда = where to; рынок = market; купить = to buy; деревня = village; никуда = nowhere; рад, рада = glad, happy
+quiz: What did Masha buy? | bread, cheese and milk | fish and tea | a ticket
+quiz: Where did Masha go on Sunday? | to grandma's | to the cinema | to the market
+quiz: What does «Куда?» ask? | Where to? | Where? | When?
+
+== 23 | A2 | В Москве, на работе | Where: the prepositional case
+recap: Everyone lives in Moscow. Masha studies at the university and works in a café, Anton works in an office. In the evening Boris thinks about fish.
+N: Тёма, где ты живёшь? | Tyoma, where do you live?
+T: Я живу в Москве. А ты? | I live in Moscow. And you?
+N: Я тоже живу в Москве. | I live in Moscow too.
+T> After в and на for a place, most words end in е: Москва, в Москве. Работа, на работе.
+N*: Я живу в Москве. | I live in Moscow.
+T: Маша учится в университете. | Masha studies at the university.
+N: А работает она в кафе. | And she works in a café.
+T: Антон работает в офисе. | Anton works in an office.
+N*: Он работает в офисе. | He works in an office.
+T: Вечером все до'ма. Маша на кухне. | In the evening everyone is at home. Masha is in the kitchen.
+N: Борис на диване. Он думает о рыбе. | Boris is on the sofa. He is thinking about fish.
+T> О means "about", and it takes the same ending: о рыбе, о Москве, о работе.
+N*: Он думает о рыбе. | He is thinking about fish.
+T: А Маша думает о бабушке. | And Masha is thinking about grandma.
+N: А о чём думаешь ты, Тёма? | And what are you thinking about, Tyoma?
+T: О пельменях. Как всегда. | About pelmeni. As always.
+N*: О чём ты думаешь? | What are you thinking about?
+words: жить = to live; учиться = to study; офис = office; диван = sofa; думать о = to think about; о чём = about what; как всегда = as always; все = everyone; на кухне = in the kitchen
+quiz: How do you say "in Moscow"? | в Москве | в Москва | на Москву
+quiz: What is Boris thinking about? | fish | grandma | work
+quiz: Where does Anton work? | in an office | in a café | at the university
+
+== 24 | A2 | Нет времени! | What is missing: the genitive case
+recap: There is no milk, no bread, no cheese and no fish at home, and Masha has no money. Anton shares his milk.
+N: Тёма, пойдём в кино? | Tyoma, shall we go to the cinema?
+T: Не могу. У меня нет времени. | I cannot. I have no time.
+N*: У меня нет времени. | I have no time.
+T> After нет the word changes. Время, нет времени. Молоко, нет молока. Рыба, нет рыбы.
+N: Утро. Маша хочет кофе с молоком. | Morning. Masha wants coffee with milk.
+T: Но молока нет! | But there is no milk!
+N*: Молока нет. | There is no milk.
+T: И хлеба нет. И сы'ра нет. | And there is no bread. And no cheese.
+N: Борис смотрит на Машу. Рыбы тоже нет! | Boris looks at Masha. There is no fish either!
+T*: У меня нет рыбы. | I have no fish.
+N: Маша идёт в магазин. Но у неё нет денег. | Masha goes to the shop. But she has no money.
+T> У неё means "she has". У него means "he has".
+N: Маша звонит: Антон, у тебя есть молоко? | Masha calls: Anton, do you have milk?
+T: Антон говорит: Да! У меня много молока. Вот, это для тебя. | Anton says: Yes! I have a lot of milk. Here, this is for you.
+N*: Это для тебя. | This is for you.
+T: Теперь кофе с молоком есть. А Борис пьёт воду без рыбы. | Now there is coffee with milk. And Boris drinks water with no fish.
+N: Бедный Борис! | Poor Boris!
+words: нет = there is no; время = time; деньги = money; много = a lot of; для = for; без = without; у неё = she has; не могу = I cannot; бедный = poor
+quiz: How do you say "I have no time"? | У меня нет времени | У меня нет время | Я нет времени
+quiz: Who gives Masha milk? | Anton | grandma | Tyoma
+quiz: After «нет», the word «молоко» becomes... | молока | молоку | молоком
+
+== 25 | A2 | Что ты купишь? | Buying things: the accusative case
+recap: Tomorrow is grandma's birthday. Masha buys her a hat, a book and a cake. Boris thinks the cake is his.
+N: Тёма, я иду в магазин. Что купить? | Tyoma, I am going to the shop. What should I buy?
+T: Купи, пожалуйста, воду и пиццу. | Please buy water and a pizza.
+N> Words that end in а change it to у when they are the thing you buy, see or love: вода', воду. Пицца, пиццу.
+T*: Купи, пожалуйста, воду. | Please buy water.
+N: Завтра день рождения бабушки. | Tomorrow is grandma's birthday.
+T: Маша думает: что я куплю'? | Masha thinks: what will I buy?
+N> Куплю' means "I will buy". One word, no helper verb.
+T*: Что я куплю'? | What will I buy?
+N: Она видит красивую шапку. | She sees a beautiful hat.
+T: Маша говорит: Я куплю' шапку! | Masha says: I will buy the hat!
+N*: Я куплю' шапку. | I will buy the hat.
+T: А ещё она купит книгу и торт. | And she will also buy a book and a cake.
+N: До'ма Маша видит Бориса. Борис видит торт. | At home Masha sees Boris. Boris sees the cake.
+T> People and animals of the "he" kind add а: Борис, вижу Бориса. Кот, вижу кота.
+N*: Я вижу кота. | I see the cat.
+T: Маша говорит: Борис, это торт для бабушки! | Masha says: Boris, this cake is for grandma!
+N: Борис думает: бабушка любит котов. Значит, это мой торт. | Boris thinks: grandma loves cats. So this is my cake.
+words: купить = to buy; я куплю' = I will buy; вода' = water; пицца = pizza; торт = cake; день рождения = birthday; видеть = to see; красивый = beautiful; значит = so, that means
+quiz: As the thing you buy, the word «вода'» becomes... | воду | воды' | вода'
+quiz: What will Masha buy for grandma? | a hat, a book and a cake | fish and milk | a ticket
+quiz: How do you say "I see the cat"? | Я вижу кота | Я вижу кот | Я вижу коту

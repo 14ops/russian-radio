@@ -2,3 +2,7 @@ voice/*.js -diff linguist-generated=true
 app/*.js -diff linguist-vendored=true
 app/fonts.css -diff linguist-vendored=true
 ai/*.js -diff linguist-generated=true
+*.cmd -text
+files.json -diff
+data/dict.js -diff linguist-generated=true
+data/course.js linguist-generated=true

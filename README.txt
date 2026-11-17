@@ -1,19 +1,37 @@
-POVTORI FM v2.1.1: Russian A1 and A2 radio, USB edition
+POVTORI FM v2.2.0: Russian A1 and A2 radio, USB edition
 =======================================================
 
 START
 1. Copy the whole Povtori-FM folder onto your USB stick.
-2. Open the folder and double-click "Povtori FM.html".
+2. Open the folder and double-click "Start Povtori FM.cmd" (or "Povtori FM.html").
    Chrome or Edge work best. Firefox works too.
 3. Press Слушать (Listen).
 
-Keep the app, voice and ai folders next to "Povtori FM.html". The page loads them from there.
+Keep the app, data, voice and ai folders next to "Povtori FM.html". The page loads them from there.
 
 
 SOMETHING BROKE?
 Scroll to the bottom of the page and open "Debug log". It lists every warning and error,
 plus what the app did, and keeps the previous visit. Press "Save as .txt" or "Copy log"
 and send it. Your API key never shows up in it.
+
+
+UPDATE
+Double-click "Update Povtori FM.cmd". It downloads only the files that changed or are
+missing, checks each one, then puts it in place. Usually a few MB. It also repairs a copy
+with missing or damaged files. If Windows says "Windows protected your PC", click
+More info, then Run anyway.
+
+
+NEW IN v2.2.0
+- Course: 30 hand-written lessons from A1 to A2, stress marks checked against a dictionary,
+  a 3-question quiz after each. The radio plays the next lesson every other segment.
+  The Story tab lists them all with Play and MP3 buttons.
+- Word review round: Words tab, 2 minutes. Hear a word and pick its meaning, or type the
+  Russian. Only right answers move a word to its next gap.
+- Tap a word: tap any Russian word in the transcript for its meaning, stress and form.
+  Add it to your words in one tap.
+- Start Povtori FM.cmd and Update Povtori FM.cmd.
 
 
 NEW IN v2.1.0
@@ -23,6 +41,7 @@ NEW IN v2.1.0
 NEW IN v2.0.0 (full list: CHANGELOG.md, or What's new at the bottom of the page)
 - Word review: each word you add comes back after 1, 3, 7 and 16 days.
   The hosts put due words into new stories and drills. The Words tab shows what is due.
+  (Since v2.2.0 only the review round moves a word up.)
 - Story quiz: 3 questions after each story, in the Game tab. Each right answer is a point.
   Turn it off in Settings: "Quiz after each story".
 - Save as MP3: Story tab, "Take it with you", or "Save MP3" on a segment in the transcript.
@@ -37,15 +56,17 @@ NEW IN v2.0.0 (full list: CHANGELOG.md, or What's new at the bottom of the page)
 - Bigger mini AI models now get prompts in their own chat format (see BIGGER MODEL).
 
 
-UPDATE AN OLD COPY
-Download the new version and unzip it over the old folder. Your words, story, scores
-and progress live in the browser, not in the folder, so they stay.
-Windows CMD, with the USB as E: and the old copy in E:\russian-radio-main:
+UPDATE A COPY WITHOUT THE UPDATER
+A copy from before v2.2.0 has no "Update Povtori FM.cmd". Download the new version once
+and unzip it over the old folder. Your words, story, scores and progress live in the
+browser, not in the folder, so they stay.
+Windows CMD (not PowerShell), with the USB as E: and the old copy in E:\russian-radio-main:
   cd /d E:\ && curl.exe -fL -o radio.zip https://github.com/14ops/russian-radio/archive/refs/heads/main.zip && tar -xf radio.zip && del radio.zip
 
 
 WHAT RUNS OFFLINE
-- The radio, built-in episodes, games, word drills and reruns
+- The radio, the 30-lesson course, built-in episodes, games, word drills and reruns
+- Tap-a-word dictionary (12,206 words with their forms, loaded from the data folder)
 - AI voices for Nika and Tyoma (Supertonic 3, loaded from the voice folder)
 - A mini AI that writes new story episodes and word drills (Gemma 3 270M, loaded from the ai folder)
 - Your words, docs (txt, md, pdf, docx), questions and story notes
@@ -125,5 +146,7 @@ CREDITS AND LICENSES (see the LICENSES folder)
 - sherpa-onnx runtime (Apache 2.0), packaged by @3sln/donki-lle (MIT)
 - Anthropic TypeScript SDK (MIT), pdf.js (Apache 2.0), mammoth (BSD 2)
 - lamejs, a JavaScript port of the LAME MP3 encoder (LGPL 3.0), app/lame.min.js, unmodified.
+- Dictionary and stress data: OpenRussian, https://en.openrussian.org (CC BY-SA 4.0),
+  in data/dict.js and behind the stress marks in data/course.js.
   LAME: https://lame.sourceforge.net  lamejs: https://github.com/zhuker/lamejs
 - Fonts: Golos Text, Unbounded, JetBrains Mono (SIL Open Font License)

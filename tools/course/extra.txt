@@ -1,0 +1,19 @@
+# Words the OpenRussian data does not cover, with stress: an apostrophe after the stressed vowel.
+# A capitalised entry only matches a capitalised word in the course text.
+
+# Names
+Ма'ша Ма'ши Ма'ше Ма'шу Ма'шей
+Бори'с Бори'са Бори'су Бори'сом Бори'се
+Анто'н Анто'на Анто'ну Анто'ном Анто'не
+Ни'ка Ни'ки Ни'ке Ни'ку Ни'кой
+
+# Pronoun forms
+меня' тебя' тебе' его' ему' него' на'ми тобо'й кому' она' оно' они'
+
+# Food, sounds, phone
+пельме'ни пельме'ней пельме'нях
+мя'у алло'
+
+# Forms the data leaves out
+одна'
+бу'ду бу'дешь бу'дет бу'дем бу'дете бу'дут

@@ -1,0 +1,120 @@
+# Units 16 to 20.
+
+== 16 | A1 | Какой? Какая? | Describing things
+recap: Anton has a new red car, Masha has an old blue bicycle. Boris is ginger, Sharik is black and white.
+N: Тёма, какой у тебя дом? | Tyoma, what is your home like?
+T: У меня большой дом. А у тебя? | I have a big house. And you?
+N: А у меня маленькая квартира. | And I have a small apartment.
+T*: Большой дом. Маленькая квартира. | A big house. A small apartment.
+N> The ending follows the noun: большой дом, больша'я машина, большое окно.
+T: У Антона новая машина. Она красная. | Anton has a new car. It is red.
+N*: Новая красная машина. | A new red car.
+T: У Маши старый велосипед. Он синий. | Masha has an old bicycle. It is blue.
+N: Какой Борис? Борис рыжий. | What is Boris like? Boris is ginger.
+T: А Шарик чёрный и белый. | And Sharik is black and white.
+N*: Чёрный и белый. | Black and white.
+T: Маша говорит: Борис очень красивый кот. | Masha says: Boris is a very beautiful cat.
+N: Антон говорит: А Шарик хорошая собака! | Anton says: And Sharik is a good dog!
+T*: Хорошая собака. | A good dog.
+N: Тёма, а что любишь ты? | Tyoma, and what do you love?
+T: Зелёный чай и красный борщ! | Green tea and red borscht!
+words: какой = what kind of, which; большой = big; маленький = small; новый = new; старый = old; красивый = beautiful; хороший = good; красный = red; синий = blue; зелёный = green; чёрный = black; белый = white; машина = car
+quiz: Which is right? | новая машина | новый машина | новое машина
+quiz: What color is Anton's car? | red | blue | green
+quiz: What does «маленький» mean? | small | big | old
+
+== 17 | A1 | Можно? Нельзя! | Allowed, not allowed, needed
+recap: Boris wants the fish on the table. Masha says he must not, then leaves to work. Now Boris and the fish are alone.
+N: Тёма, можно вопрос? | Tyoma, may I ask a question?
+T: Да, конечно, можно. | Yes, of course you may.
+N*: Можно вопрос? | May I ask a question?
+T> Можно means "it is allowed". Нельзя means "it is not allowed".
+N: Маша обедает. На столе рыба. | Masha is having lunch. There is fish on the table.
+T: Борис думает: можно? | Boris thinks: may I?
+N: Маша говорит: Борис, нельзя! | Masha says: Boris, no!
+T*: Нельзя! | Not allowed!
+N: Борис сидит и смотрит. Маша читает. | Boris sits and watches. Masha is reading.
+T: Борис думает: а сейчас можно? | Boris thinks: and now, may I?
+N: Маша говорит: Борис! Здесь нельзя сидеть! | Masha says: Boris! You must not sit here!
+T*: Здесь нельзя сидеть. | You must not sit here.
+N: Маше нужно работать. Она идёт в комнату. | Masha needs to work. She goes to her room.
+T> Нужно means "it is necessary". Мне нужно работать: I need to work.
+N*: Мне нужно работать. | I need to work.
+T: А рыба на столе. И Борис на столе. | And the fish is on the table. And Boris is on the table.
+N: Теперь можно всё! | Now everything is allowed!
+words: можно = may, it is allowed; нельзя = must not, not allowed; нужно = need to, it is necessary; конечно = of course; вопрос = question; сидеть = to sit; смотреть = to look, to watch; теперь = now
+quiz: What does «Нельзя!» mean? | Not allowed! | Of course! | Thank you!
+quiz: What does Boris want? | the fish | to sleep | to go outside
+quiz: How do you say "I need to work"? | Мне нужно работать | Я можно работать | Мне нельзя работать
+
+== 18 | A1 | Тра'нспорт | Getting around
+recap: Masha waits for a bus that does not come. Anton drives by with Sharik and takes her downtown.
+N: Тёма, как ты едешь на работу? | Tyoma, how do you get to work?
+T: Я е'ду на метро. А ты? | I go by metro. And you?
+N: А я иду пешком. Это близко. | And I walk. It is close.
+T> Идти is to go on foot. Ехать is to go by transport: я е'ду, ты едешь, он едет.
+N*: Я е'ду на метро. | I go by metro.
+T*: Я иду пешком. | I go on foot.
+N: Утро. Маша едет в университет на автобусе. | Morning. Masha goes to the university by bus.
+T: Вот остановка. А где автобус? | Here is the bus stop. But where is the bus?
+N: Автобуса нет. Маша ждёт. | There is no bus. Masha is waiting.
+T*: Где остановка? | Where is the bus stop?
+N: Антон едет на машине. Он говорит: Маша, поехали! | Anton is driving his car. He says: Masha, let us go!
+T: Маша говорит: Спасибо! Ты едешь в центр? | Masha says: Thanks! Are you going downtown?
+N*: Ты едешь в центр? | Are you going downtown?
+T: Антон говорит: Да. И Шарик тоже едет. | Anton says: Yes. And Sharik is coming too.
+N: Шарик очень рад. Он любит машину! | Sharik is very happy. He loves the car!
+T: А билет? Билет не нужен! | And a ticket? No ticket needed!
+words: ехать = to go (by transport); автобус = bus; машина = car; остановка = (bus) stop; билет = ticket; пешком = on foot; центр = center, downtown; ждать = to wait; работа = work, job
+quiz: Which verb is for going by bus or car? | ехать | идти | сидеть
+quiz: How does Tyoma get to work? | by metro | on foot | by car
+quiz: What does «пешком» mean? | on foot | by bus | fast
+
+== 19 | A1 | По телефону | On the phone
+recap: Anton calls Masha and invites her to the cinema at seven. Boris stays home with the TV.
+N: Телефон звонит. Маша говорит: Алло! | The phone rings. Masha says: Hello!
+T: Привет, Маша! Это Антон. Ты где? | Hi, Masha! It is Anton. Where are you?
+N*: Алло! Ты где? | Hello! Where are you?
+T: Маша говорит: Я до'ма. А ты? | Masha says: I am at home. And you?
+N: Антон говорит: Я на работе. Что ты делаешь вечером? | Anton says: I am at work. What are you doing tonight?
+T*: Что ты делаешь вечером? | What are you doing tonight?
+N: Маша говорит: Ничего. | Masha says: Nothing.
+T: Антон говорит: Давай пойдём в кино! | Anton says: Let us go to the cinema!
+N> Давай means "let us". Давай пойдём: let us go. Давай играть: let us play.
+T*: Давай пойдём в кино! | Let us go to the cinema!
+N: Маша говорит: Давай! Во сколько? | Masha says: Sure! What time?
+T: Антон говорит: В семь часов. Хорошо? | Anton says: At seven o'clock. OK?
+N*: Во сколько? | At what time?
+T: Маша говорит: Хорошо. Договорились! | Masha says: OK. It is a deal!
+N*: Договорились! | It is a deal!
+T: Борис слушает. Он думает: а я? | Boris is listening. He thinks: what about me?
+N: Борис, ты до'ма. Твоё кино по телевизору! | Boris, you are staying home. Your movie is on TV!
+words: телефон = phone; алло = hello (on the phone); звонить = to call, to ring; давай = let us; кино = cinema, movie; во сколько = at what time; договорились = it is a deal; ничего = nothing; на работе = at work
+quiz: How do you suggest "Let us go to the cinema"? | Давай пойдём в кино | Я иду в кино | Где кино?
+quiz: What time do they meet? | at seven | at five | at nine
+quiz: What does «Договорились!» mean? | It is a deal! | Goodbye! | I am late!
+
+== 20 | A1 | У врача | At the doctor
+recap: Masha has a sore throat and a fever. The doctor tells her to rest and drink tea. Boris keeps her warm.
+N: Тёма, что с тобой? | Tyoma, what is wrong?
+T: У меня болит голова. | I have a headache.
+N*: У меня болит голова. | I have a headache.
+T> Say У меня болит, then the body part. Голова is head, горло is throat, живот is stomach.
+N: Маша тоже болеет. Она идёт к врачу. | Masha is ill too. She goes to the doctor.
+T: Врач говорит: Что у вас болит? | The doctor says: What hurts?
+N: Маша говорит: У меня болит горло. И температура. | Masha says: My throat hurts. And I have a fever.
+T*: У меня болит горло. | My throat hurts.
+N: Врач говорит: Вам нужно отдыхать и пить чай. | The doctor says: You need to rest and drink tea.
+T*: Вам нужно отдыхать. | You need to rest.
+N: Вот рецепт. Аптека рядом. | Here is a prescription. The pharmacy is nearby.
+T: Маша до'ма. Она пьёт чай с лимоном. | Masha is at home. She drinks tea with lemon.
+N: Борис сидит рядом. Он тёплый. | Boris sits next to her. He is warm.
+T: Антон звонит: Маша, как ты? | Anton calls: Masha, how are you?
+N: Маша говорит: Уже' лучше. Спасибо! | Masha says: Better already. Thank you!
+T*: Уже' лучше. | Better already.
+N: Тёма, а твоя голова? | Tyoma, and your head?
+T: Мне нужен кофе. И пельмени, конечно. | I need coffee. And pelmeni, of course.
+words: врач = doctor; у меня болит = my ... hurts; голова = head; горло = throat; живот = stomach; температура = temperature, fever; рецепт = prescription; лучше = better; болеть = to be ill
+quiz: How do you say "I have a headache"? | У меня болит голова | Я голова | Мне голова плохо
+quiz: What does the doctor tell Masha to do? | rest and drink tea | go to work | eat fish
+quiz: What does «Уже' лучше» mean? | Better already | Very bad | Still cold

@@ -1,6 +1,6 @@
 # Povtori FM
 
-**v2.1.1** · [Change log](CHANGELOG.md)
+**v2.2.0** · [Change log](CHANGELOG.md)
 
 An endless Russian radio show for A1 and A2 learners. Two hosts, Nika and Tyoma, tell a story that never ends, repeat key phrases for you to say out loud, answer your questions on air, drill your own words and docs, run a guessing game, and score your voice.
 
@@ -12,6 +12,13 @@ Everything runs in the browser. No install, no build step.
 - As a website: turn on GitHub Pages for this repo (Settings, Pages, deploy from the `main` branch, root folder). Then open `https://14ops.github.io/russian-radio/`.
 
 Press **Слушать** to start.
+
+## New in v2.2.0
+
+- **Course**: 30 hand-written lessons from A1 to A2 with checked stress marks and a quiz each. The radio plays the next one every other segment.
+- **Word review round**: 2 minutes, hear a word and pick its meaning, or type the Russian. Only right answers move a word up.
+- **Tap a word**: meaning, stress and form of any Russian word in the transcript, offline.
+- **USB helpers**: `Start Povtori FM.cmd` and `Update Povtori FM.cmd`.
 
 ## New in v2.0.0
 
@@ -26,9 +33,13 @@ Press **Слушать** to start.
 
 Full details in [CHANGELOG.md](CHANGELOG.md).
 
-## Update a copy on a USB stick
+## Start and update on Windows
 
-Download the zip again and unzip it over the old folder. Your words, story and progress live in the browser, so they stay. On Windows, in CMD (not PowerShell), with the stick as `E:`:
+- **Start Povtori FM.cmd** opens the radio in Chrome or Edge.
+- **Update Povtori FM.cmd** downloads only the files that changed or are missing, and checks each one against `files.json` before it goes in place. An update is usually a few MB. It also repairs a copy with missing or damaged files.
+- If Windows says "Windows protected your PC", click **More info**, then **Run anyway**.
+
+No helpers yet? Download the zip once and unzip it over the old folder. Your words, story and progress live in the browser, so they stay. In CMD (not PowerShell), with the stick as `E:`:
 
 ```
 cd /d E:\ && curl.exe -fL -o radio.zip https://github.com/14ops/russian-radio/archive/refs/heads/main.zip && tar -xf radio.zip && del radio.zip
@@ -76,9 +87,13 @@ Full instructions: [README.txt](README.txt).
 | `app/` | Fonts, the Anthropic SDK browser bundle, pdf.js, mammoth, lamejs (MP3 encoder) |
 | `ai/` | Gemma 3 270M (Q4_K_M) and the wllama engine, split into script chunks |
 | `voice/` | Supertonic 3 voice model and sherpa-onnx runtime, split into script chunks so they load from a plain folder |
+| `data/` | The course (`course.js`) and the tap-a-word dictionary (`dict.js`) |
+| `Start Povtori FM.cmd`, `Update Povtori FM.cmd` | Windows helpers: open the radio, update it |
+| `files.json` | Every shipped file with its size and SHA-256, for the updater |
+| `tools/` | Builders for the course, the dictionary and `files.json` (not needed to run the app) |
 | `LICENSES/` | Third-party licenses |
 | `CHANGELOG.md` | Every version and what changed |
 
 ## Credits
 
-Supertonic 3 voice model by Supertone (OpenRAIL-M). Gemma 3 270M by Google, under the Gemma Terms of Use. wllama (MIT). sherpa-onnx runtime (Apache 2.0), packaged by @3sln/donki-lle (MIT). Anthropic TypeScript SDK (MIT), pdf.js (Apache 2.0), mammoth (BSD 2), lamejs, a JavaScript port of [LAME](https://lame.sourceforge.net) (LGPL 3.0, used unmodified as `app/lame.min.js`). Fonts: Golos Text, Unbounded, JetBrains Mono (SIL OFL). See `LICENSES/`.
+Supertonic 3 voice model by Supertone (OpenRAIL-M). Gemma 3 270M by Google, under the Gemma Terms of Use. wllama (MIT). sherpa-onnx runtime (Apache 2.0), packaged by @3sln/donki-lle (MIT). Anthropic TypeScript SDK (MIT), pdf.js (Apache 2.0), mammoth (BSD 2), lamejs, a JavaScript port of [LAME](https://lame.sourceforge.net) (LGPL 3.0, used unmodified as `app/lame.min.js`). Dictionary and stress data: [OpenRussian](https://en.openrussian.org) (CC BY-SA 4.0), in `data/dict.js` and behind the stress marks in `data/course.js`. Fonts: Golos Text, Unbounded, JetBrains Mono (SIL OFL). See `LICENSES/`.

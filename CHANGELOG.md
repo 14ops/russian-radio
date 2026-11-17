@@ -2,6 +2,14 @@
 
 The app shows the same log under **What's new** at the bottom of the page.
 
+## v2.2.0 (2026-11-17)
+
+- **Course.** 30 hand-written lessons from A1 to A2 in `data/course.js`: greetings to all six cases, the past and the future, told through Masha, Anton, Boris and Sharik. 505 lines, 281 words, 90 quiz questions. Every stress mark comes from, or was checked against, the OpenRussian dictionary by `tools/build_course.py`. The radio plays the next lesson every other segment, each followed by its 3-question quiz. The Story tab lists all 30 with Play and MP3 buttons and your quiz score. A finished lesson adds its words to your list, first due the next day. The AI writers see which lessons you finished and recycle their words.
+- **Word review round.** A 2-minute round in the Words tab, up to 20 due words. New words come as "hear it, pick the meaning" cards with 4 options; words from stage 2 on can also come as "type the Russian" cards with the on-screen keyboard. One wrong letter in a word of 5 or more letters still counts. A miss comes back once at the end of the round. Only a right answer moves a word to its next gap: hearing a word on air no longer counts as a review.
+- **Tap a word.** Tap any Russian word in the transcript or on air: meaning, stress, part of speech, gender or aspect, and which form it is ("ры́бу is the accusative singular of ры́ба"). One tap adds it to your words. The dictionary is `data/dict.js`, 12,206 words with their forms from OpenRussian (CC BY-SA 4.0), loaded on the first tap. New words you type get their meaning and stress filled in from it, offline.
+- **USB helpers.** `Start Povtori FM.cmd` opens the radio in Chrome or Edge. `Update Povtori FM.cmd` downloads `files.json`, compares sizes and SHA-256 fingerprints, and downloads only changed or missing files, checking each one before it goes in place. It repairs a copy with missing or damaged files too.
+- Progress counts review answers, and 5 review answers make a day count toward the streak.
+
 ## v2.1.1 (2026-11-09)
 
 - Word review: a review day runs from 04:00 to 04:00. A late-night session that crosses midnight no longer counts a word twice.
