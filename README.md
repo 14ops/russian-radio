@@ -1,6 +1,6 @@
 # Povtori FM
 
-**v2.2.1** · [Change log](CHANGELOG.md)
+**v2.3.0** · [Change log](CHANGELOG.md)
 
 An endless Russian radio show for A1 and A2 learners. Two hosts, Nika and Tyoma, tell a story that never ends, repeat key phrases for you to say out loud, answer your questions on air, drill your own words and docs, run a guessing game, and score your voice.
 
@@ -12,6 +12,10 @@ Everything runs in the browser. No install, no build step.
 - As a website: turn on GitHub Pages for this repo (Settings, Pages, deploy from the `main` branch, root folder). Then open `https://14ops.github.io/russian-radio/`.
 
 Press **Слушать** to start.
+
+## New in v2.3.0
+
+- **New look**: Red (Crayola) `#ED254E` and Gunmetal `#002A32`, a red header band with a diagonal cut and doodles, white cards, a red dial, and Oswald headings. Light and dark mode.
 
 ## New in v2.2.1
 
@@ -102,4 +106,4 @@ Full instructions: [README.txt](README.txt).
 
 ## Credits
 
-Supertonic 3 voice model by Supertone (OpenRAIL-M). Gemma 3 270M by Google, under the Gemma Terms of Use. wllama (MIT). sherpa-onnx runtime (Apache 2.0), packaged by @3sln/donki-lle (MIT). Anthropic TypeScript SDK (MIT), pdf.js (Apache 2.0), mammoth (BSD 2), lamejs, a JavaScript port of [LAME](https://lame.sourceforge.net) (LGPL 3.0, used unmodified as `app/lame.min.js`). Dictionary and stress data: [OpenRussian](https://en.openrussian.org) (CC BY-SA 4.0), in `data/dict.js` and behind the stress marks in `data/course.js`. Fonts: Golos Text, Unbounded, JetBrains Mono (SIL OFL). See `LICENSES/`.
+Supertonic 3 voice model by Supertone (OpenRAIL-M). Gemma 3 270M by Google, under the Gemma Terms of Use. wllama (MIT). sherpa-onnx runtime (Apache 2.0), packaged by @3sln/donki-lle (MIT). Anthropic TypeScript SDK (MIT), pdf.js (Apache 2.0), mammoth (BSD 2), lamejs, a JavaScript port of [LAME](https://lame.sourceforge.net) (LGPL 3.0, used unmodified as `app/lame.min.js`). Dictionary and stress data: [OpenRussian](https://en.openrussian.org) (CC BY-SA 4.0), in `data/dict.js` and behind the stress marks in `data/course.js`. Fonts: Golos Text, Oswald, JetBrains Mono (SIL OFL). See `LICENSES/`.

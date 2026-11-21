@@ -2,6 +2,13 @@
 
 The app shows the same log under **What's new** at the bottom of the page.
 
+## v2.3.0 (2026-11-21)
+
+- **New look: Red (Crayola) `#ED254E` and Gunmetal `#002A32`.** A red header band across the page with a diagonal cut and hand-drawn doodles (crown, star, dots, crosses), white cards, a red tuning dial with gunmetal markings, red action buttons, and Oswald (bold condensed, with Cyrillic) for the logo and headings. Dark mode puts the cards on gunmetal. Text colors keep at least 4.5:1 contrast: gunmetal on white is 15:1, white on the button red `#D81B47` is 5:1.
+- Stress marks sit right above the letter in Oswald too. Oswald stands taller in its line box than Golos Text, so its marks get their own offset.
+- The lock screen art (earbuds and media keys) uses the new colors.
+- `app/fonts.css` shrank from 617 KB to 349 KB: Oswald (6 small files) replaced Unbounded (12). License in `LICENSES/font-oswald-OFL.txt`.
+
 ## v2.2.1 (2026-11-21)
 
 - **Mini AI dictionary check.** Every line the mini AI writes goes through `data/dict.js` before it goes on air. It drops lines with a made-up word, a verb that does not fit its subject (*ты покупаете*, *мама сказало*), an adjective that does not fit its noun, the wrong case after a preposition (*у Машу*), в or на with the wrong place (*на магазине*), a noun the English gets wrong (*котлеты* as "chicken skewers"), dark words, and near copies. It passes 455 of the 456 course lines. The one it rejects is a teaching line where Tyoma quotes a woman.

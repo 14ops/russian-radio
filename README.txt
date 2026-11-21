@@ -1,4 +1,4 @@
-POVTORI FM v2.2.1: Russian A1 and A2 radio, USB edition
+POVTORI FM v2.3.0: Russian A1 and A2 radio, USB edition
 =======================================================
 
 START
@@ -21,6 +21,11 @@ Double-click "Update Povtori FM.cmd". It downloads only the files that changed o
 missing, checks each one, then puts it in place. Usually a few MB. It also repairs a copy
 with missing or damaged files. If Windows says "Windows protected your PC", click
 More info, then Run anyway.
+
+
+NEW IN v2.3.0
+- New look: Red (Crayola) #ED254E and Gunmetal #002A32. Red header band with a diagonal
+  cut and doodles, white cards, a red dial, bold condensed headings. Light and dark mode.
 
 
 NEW IN v2.2.1
@@ -162,4 +167,4 @@ CREDITS AND LICENSES (see the LICENSES folder)
 - Dictionary and stress data: OpenRussian, https://en.openrussian.org (CC BY-SA 4.0),
   in data/dict.js and behind the stress marks in data/course.js.
   LAME: https://lame.sourceforge.net  lamejs: https://github.com/zhuker/lamejs
-- Fonts: Golos Text, Unbounded, JetBrains Mono (SIL Open Font License)
+- Fonts: Golos Text, Oswald, JetBrains Mono (SIL Open Font License)
