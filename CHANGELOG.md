@@ -2,6 +2,16 @@
 
 The app shows the same log under **What's new** at the bottom of the page.
 
+## v2.2.1 (2026-11-21)
+
+- **Mini AI dictionary check.** Every line the mini AI writes goes through `data/dict.js` before it goes on air. It drops lines with a made-up word, a verb that does not fit its subject (*ты покупаете*, *мама сказало*), an adjective that does not fit its noun, the wrong case after a preposition (*у Машу*), в or на with the wrong place (*на магазине*), a noun the English gets wrong (*котлеты* as "chicken skewers"), dark words, and near copies. It passes 455 of the 456 course lines. The one it rejects is a teaching line where Tyoma quotes a woman.
+- **Stress marks on mini AI lines.** The dictionary adds stress marks and ё where every reading agrees, so *идет* becomes *идёт* and *магазин* becomes *магази́н*. On the course lines, 1317 of 1318 marks match the hand-checked ones.
+- **Bigger models write better stories.** The chat prompt now has the rules as a system message, a course lesson as the example (lesson 10 for A1, lesson 22 for A2), hosts that take turns, Nika speaking as a woman and Tyoma as a man, and a light everyday story. Your story idea becomes the plot, and it leaves the list once an episode uses it, or after 2 tries.
+- **Bigger models run faster after the first episode.** Every prompt starts with the same rules and example, so the engine keeps that part cached and reads only the new request. With Qwen2.5 1.5B Instruct (q4_k_m) on a test computer without a graphics chip, one CPU thread: the first episode read 599 prompt tokens and took 7 minutes, the next episode read 87 new tokens (523 from cache) and took 2.5 minutes. A drill word takes about a minute.
+- **Debug log.** Each mini AI prompt logs its speed (tokens read, tokens from cache, tokens per second) and what the check dropped.
+- **Dictionary.** Names (Маша, Борис, Ника, Тёма and 20 more) have gender and the right case labels, so tapping *Ма́ши* says genitive. Pronoun forms such as *него́*, *ней*, *нему́*, *кого́*, *на́ш* and *ва́ш* were missing and are in now.
+- The built-in Gemma 3 270M goes through the same check and gets one more try for a drill word when nothing passed.
+
 ## v2.2.0 (2026-11-17)
 
 - **Course.** 30 hand-written lessons from A1 to A2 in `data/course.js`: greetings to all six cases, the past and the future, told through Masha, Anton, Boris and Sharik. 505 lines, 281 words, 90 quiz questions. Every stress mark comes from, or was checked against, the OpenRussian dictionary by `tools/build_course.py`. The radio plays the next lesson every other segment, each followed by its 3-question quiz. The Story tab lists all 30 with Play and MP3 buttons and your quiz score. A finished lesson adds its words to your list, first due the next day. The AI writers see which lessons you finished and recycle their words.

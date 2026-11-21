@@ -1,4 +1,4 @@
-POVTORI FM v2.2.0: Russian A1 and A2 radio, USB edition
+POVTORI FM v2.2.1: Russian A1 and A2 radio, USB edition
 =======================================================
 
 START
@@ -21,6 +21,14 @@ Double-click "Update Povtori FM.cmd". It downloads only the files that changed o
 missing, checks each one, then puts it in place. Usually a few MB. It also repairs a copy
 with missing or damaged files. If Windows says "Windows protected your PC", click
 More info, then Run anyway.
+
+
+NEW IN v2.2.1
+- The mini AI checks every line against the dictionary before it goes on air: made-up
+  words, broken endings (ты покупаете), wrong cases (у Машу), wrong English meanings.
+  Lines that pass get stress marks.
+- Bigger models such as Qwen2.5 1.5B write better stories, use your story idea as the
+  plot, and run about 3 times faster from the second episode on.
 
 
 NEW IN v2.2.0
@@ -118,6 +126,11 @@ BIGGER MODEL (better Russian, still offline)
    Settings, "Prompt style": Auto picks it for you. Chat or plain forces one.
    In chat format the model also gets the story so far and your story ideas.
 Bigger models write better and slower. A computer with a decent graphics chip helps a lot.
+Speed with Qwen2.5 1.5B on a test computer without a graphics chip: 7 minutes for the
+first episode, about 2.5 minutes for each one after it. Built-in episodes play meanwhile.
+The debug log at the bottom of the page shows the speed on your computer.
+Every line the mini AI writes goes through a dictionary check first. Lines with made-up
+words, broken endings or a wrong English meaning stay off air.
 Model files with "IQ" in the name are slow and low quality here. Avoid them.
 
 

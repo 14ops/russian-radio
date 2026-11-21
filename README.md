@@ -1,6 +1,6 @@
 # Povtori FM
 
-**v2.2.0** · [Change log](CHANGELOG.md)
+**v2.2.1** · [Change log](CHANGELOG.md)
 
 An endless Russian radio show for A1 and A2 learners. Two hosts, Nika and Tyoma, tell a story that never ends, repeat key phrases for you to say out loud, answer your questions on air, drill your own words and docs, run a guessing game, and score your voice.
 
@@ -12,6 +12,12 @@ Everything runs in the browser. No install, no build step.
 - As a website: turn on GitHub Pages for this repo (Settings, Pages, deploy from the `main` branch, root folder). Then open `https://14ops.github.io/russian-radio/`.
 
 Press **Слушать** to start.
+
+## New in v2.2.1
+
+- **Dictionary check for the mini AI**: every AI line goes through `data/dict.js` before it airs. Made-up words, broken endings (*ты покупаете*), wrong cases (*у Машу*) and wrong English meanings stay off air. It passes 455 of the 456 course lines.
+- **Stress marks on AI lines**, from the same dictionary: 1317 of 1318 match the course.
+- **Bigger models write better and run faster**: a course lesson as the example, your story idea as the plot, and a cached prompt start. With Qwen2.5 1.5B the second episode took 144 s instead of 407 s.
 
 ## New in v2.2.0
 
@@ -62,8 +68,8 @@ Open **Debug log** at the bottom of the page. It lists every warning and error, 
 
 Pick a writer in Settings (the **Голоса** button):
 
-- **Mini AI** (default). Gemma 3 270M runs in the browser through wllama (llama.cpp in WebAssembly, WebGPU when available). Offline, free, no setup. It is tiny, so expect clumsy and sometimes wrong Russian. It writes story episodes and word drills. A grammar keeps every line in the `Russian | English` format.
-  - **Bigger model:** download a GGUF under 2 GB on your computer, for example [Qwen2.5 1.5B Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF) (`q4_k_m`, about 1.1 GB) or [Gemma 3 1B IT](https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF) (`Q4_K_M`, about 0.8 GB). In Settings pick **Use a bigger model file**. The browser keeps it, and **Back to built-in** undoes it. Instruct models get prompts in their own chat format (Settings, **Prompt style**).
+- **Mini AI** (default). Gemma 3 270M runs in the browser through wllama (llama.cpp in WebAssembly, WebGPU when available). Offline, free, no setup. It is tiny, so expect clumsy and sometimes wrong Russian. It writes story episodes and word drills. A grammar keeps every line in the `Russian | English` format, and a dictionary check drops lines with made-up words, broken endings or a wrong English meaning before they go on air. Lines that pass get stress marks from the dictionary.
+  - **Bigger model:** download a GGUF under 2 GB on your computer, for example [Qwen2.5 1.5B Instruct](https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF) (`q4_k_m`, about 1.1 GB) or [Gemma 3 1B IT](https://huggingface.co/ggml-org/gemma-3-1b-it-GGUF) (`Q4_K_M`, about 0.8 GB). In Settings pick **Use a bigger model file**. The browser keeps it, and **Back to built-in** undoes it. Instruct models get prompts in their own chat format (Settings, **Prompt style**). Speed with Qwen2.5 1.5B on a test computer without a graphics chip: 7 minutes for the first episode, about 2.5 minutes for each one after it, because the engine keeps the start of the prompt cached. Built-in episodes play while it writes. The debug log shows the speed on your computer.
 - **Claude** with your own API key from console.anthropic.com. Needs internet. See [Your API key](#your-api-key).
 - **Ollama** on your computer. Offline. Start it with `OLLAMA_ORIGINS="*" ollama serve` so the page is allowed to reach it.
 - **Built-in episodes only.** No setup.

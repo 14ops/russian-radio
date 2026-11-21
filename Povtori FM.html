@@ -842,8 +842,16 @@ const WORD_IDEAS = ['ко́фе', 'метро́', 'дождь', 'друг', 'в�
 const PHRASE_IDEAS = ['Кот пьёт молоко́.', 'Приве́т! Как дела́?', 'Где моя́ ры́ба?', 'Ско́лько сто́ит?'];
 
 /* ---------- version and change log ---------- */
-const VERSION = '2.2.0';
+const VERSION = '2.2.1';
 const CHANGES = [
+  { v: '2.2.1', date: '2026-11-21', items: [
+    'Mini AI dictionary check: every line the mini AI writes goes through the dictionary before it goes on air. It drops lines with a made-up word, a verb that does not fit its subject (ты покупаете, мама сказало), an adjective that does not fit its noun, the wrong case after a preposition (у Машу), в or на with the wrong place (на магазине), a noun the English gets wrong (котлеты as chicken skewers), dark words, and near copies. It passes 455 of the 456 course lines.',
+    'Stress marks on mini AI lines: the dictionary adds stress marks and ё where every reading agrees. On the course lines, 1317 of 1318 marks match.',
+    'Bigger models write better stories: the rules go in a system message, a course lesson is the example, the hosts take turns, Nika speaks as a woman and Tyoma as a man, and the story stays light and everyday. Your story idea becomes the plot, and it leaves the list once an episode uses it.',
+    'Bigger models run faster after the first episode: every prompt starts the same, so the engine keeps that part cached. With Qwen2.5 1.5B on a test computer without a graphics chip, the first episode took 7 minutes and the next one 2.5 minutes.',
+    'Debug log: each mini AI prompt logs its speed and what the check dropped.',
+    'Tap a word: names like Ма́ша and Бори́с show the right case, and words like него́, ней, кого́, на́ш and ва́ш are in the dictionary now.',
+  ] },
   { v: '2.2.0', date: '2026-11-17', items: [
     'Course: 30 hand-written lessons from A1 to A2, every stress mark checked against a dictionary. The radio plays the next lesson every other segment, each with a 3-question quiz, and the Story tab lists all 30.',
     'Word review round: a 2-minute round in the Words tab. Hear a word and pick its meaning, or type the Russian for a meaning. Only right answers move a word to its next gap. Airing a word no longer counts as a review.',
@@ -2847,7 +2855,134 @@ const Lex = {
     if (a === 'hear') { if (S.playing) D.pause(); wake(); AE.wake(); if (Music.on) Music.set(0, 0.2); Talk.ru(stripStress(b.dataset.w), 'N', null, {}).catch(() => {}); return; }
     if (a === 'add' && Vocab.addEntry(b.dataset.ru, b.dataset.en)) { b.disabled = true; b.textContent = 'On your list ✓'; }
   },
+  /* every reading of a word: part of speech, gender and animacy, lemma, form slot */
+  readings(w) {
+    if (!this.map) return [];
+    const d = this.d;
+    return (this.map.get(lexKey(w)) || []).map(([i, si]) => { const e = d.e[i], pos = e[2][0]; return { i, pos, info: e[2].slice(1), lemma: lexKey(e[0]), indecl: !e[3], slot: si < 0 ? 'lemma' : ((d.slots[pos] || [])[si] || '') }; });
+  },
+  /* why an AI line should stay off air, or '' when it passes. who: N is Nika (a woman), T is Tyoma (a man).
+     Checks: every word is in the dictionary (short names pass mid-sentence), pronoun and noun agree with the verb,
+     adjective agrees with its noun, the case fits the preposition, в or на fits the place, no dark words,
+     and with en given, each noun's meaning shows up in the English. On the course lines it rejects 1 of 456. */
+  check(ru, who, allow, en) {
+    if (!this.map) return '';
+    const words = [];
+    let start = true;
+    for (const t of stripStress(ru).match(/[А-Яа-яЁё]+(?:-[А-Яа-яЁё]+)*|[^\sА-Яа-яЁё]+/g) || []) {
+      if (/^[А-Яа-яЁё]/.test(t)) { words.push({ w: t, k: lexKey(t), start, gap: false }); start = false; }
+      else { if (words.length) words[words.length - 1].gap = true; if (/[.!?]/.test(t)) start = true; }
+    }
+    for (const x of words) {
+      x.r = this.readings(x.w);
+      if (!x.r.length && x.w.includes('-')) x.r = [].concat(...x.w.split('-').map((p) => this.readings(p)));
+      /* a capitalised name wins over a rare look-alike: Машу is the name, not "I wave" (махать) */
+      const nm = /^[А-ЯЁ]/.test(x.w) ? x.r.filter((r) => / name\)/.test(this.d.e[r.i][1])) : [];
+      if (nm.length) x.r = nm;
+      if (!x.r.length) { if ((/^[А-ЯЁ]/.test(x.w) && !x.start && x.w.length <= 8) || (allow && allow.some((a) => x.k.startsWith(a)))) continue; return 'unknown word ' + x.w; }
+      if (x.r.every((r) => LEX_DARK.has(r.lemma))) return 'dark word ' + x.w;
+    }
+    const only = (x, pos) => x.r.length > 0 && x.r.every((r) => r.pos === pos);
+    const isAdj = (x) => x.r.some((r) => r.pos === 'a') && x.r.every((r) => (r.pos === 'a' && (r.slot === 'lemma' || /^decl_/.test(r.slot))) || (r.pos === 'n' && x.r.some((q) => q.pos === 'a' && q.lemma === r.lemma)));
+    const verbAfter = (i) => { let j = i + 1; while (j < words.length && !words[j - 1].gap && LEX_SKIP.has(words[j].k)) j++; return j < words.length && !words[j - 1].gap && only(words[j], 'v') ? words[j] : null; };
+    for (let i = 0; i < words.length; i++) {
+      const x = words[i], k = x.k, joined = i > 0 && !words[i - 1].gap && (words[i - 1].k === 'и' || words[i - 1].k === 'или');
+      if (LEX_PRON[k] && !joined) {
+        const v = verbAfter(i), vs = v ? v.r.map((r) => r.slot) : [];
+        if (v && !vs.includes('lemma')) {
+          const ok = LEX_PRON[k].filter((s) => !(k === 'я' && ((who === 'N' && s === 'past_m') || (who === 'T' && s === 'past_f'))));
+          if (!vs.some((s) => ok.includes(s))) return 'agreement ' + x.w + ' ' + v.w;
+        }
+      }
+      if (only(x, 'n') && !joined && !x.gap) {
+        const gc = [].concat(...x.r.map(lexNounGC)), gs = new Set(gc.map(([g]) => g)), v = verbAfter(i);
+        if (v && gc.length && gc.every(([, c]) => c === 'nom') && gs.size === 1 && !gs.has('?')) {
+          const g = [...gs][0], vs = v.r.map((r) => r.slot), ok = g === 'pl' ? ['past_pl', 'presfut_pl3'] : ['past_' + g, 'presfut_sg3'];
+          if (!vs.includes('lemma') && !vs.some((s) => /^imperative/.test(s)) && !vs.some((s) => ok.includes(s))) return 'agreement ' + x.w + ' ' + v.w;
+        }
+      }
+      const y = words[i + 1];
+      if (!y || x.gap) continue;
+      if (isAdj(x) && only(y, 'n') && !(i > 0 && LEX_NUMS.has(words[i - 1].k))) {
+        const A = [].concat(...x.r.filter((r) => r.pos === 'a').map(lexAdjGC)), N = [].concat(...y.r.map(lexNounGC));
+        if (A.length && N.length && !N.some(([g]) => g === '?') && !A.some(([ag, ac]) => N.some(([ng, nc]) => ng === ag && nc === ac))) return 'agreement ' + x.w + ' ' + y.w;
+      }
+      const cases = LEX_CASES[k];
+      if (cases && !x.start && !LEX_FIXED.has(k + ' ' + y.k)) {
+        if (isAdj(y)) {
+          const cs = new Set([].concat(...y.r.filter((r) => r.pos === 'a').map(lexAdjGC)).map(([, c]) => c));
+          if (cs.size && ![...cs].some((c) => cases.includes(c))) return 'case ' + x.w + ' ' + y.w;
+        } else if (only(y, 'n')) {
+          const N = [].concat(...y.r.map(lexNounGC)), cs = new Set(N.map(([, c]) => c).filter((c) => cases.includes(c)));
+          if (N.length && !cs.size) return 'case ' + x.w + ' ' + y.w;
+          const where = cs.size === 1 && cs.has('prep');
+          if (where && k === 'на' && y.r.some((r) => LEX_IN.has(r.lemma))) return 'place на ' + y.w;
+          if (where && (k === 'в' || k === 'во') && y.r.some((r) => LEX_ON.has(r.lemma))) return 'place в ' + y.w;
+        }
+      }
+    }
+    if (en) {
+      const have = [].concat(...String(en).toLowerCase().split(/[^a-z]+/).filter(Boolean).map((h) => [h].concat(LEX_EN_SYN[h] ? LEX_EN_SYN[h].split(' ') : [])));
+      for (const x of words) {
+        if (!only(x, 'n') || x.r.some((r) => LEX_IDIOM.has(r.lemma) || / name\)/.test(this.d.e[r.i][1]))) continue;
+        const st = [].concat(...[...new Set(x.r.map((r) => r.i))].map((i) => lexEnStems(this.d.e[i][1]))), tr = lexTranslit(x.r[0].lemma).slice(0, 4);
+        if (st.length && !st.some((s) => have.some((h) => h.startsWith(s))) && !(tr.length === 4 && have.some((h) => h.startsWith(tr)))) return 'meaning ' + x.w;
+      }
+    }
+    return '';
+  },
+  /* stress marks and ё for an AI line, only where every reading in the dictionary agrees */
+  accent(s) {
+    if (!this.map) return s;
+    const one = (w) => {
+      if ((w.match(LEX_V) || []).length < 2 && !/[её]/i.test(w)) return w;
+      const hits = this.map.get(lexKey(w));
+      if (!hits) return w;
+      const fw = hits.filter(([i, si]) => si < 0 && this.d.e[i][2] === 'o');
+      const forms = new Set((fw.length ? fw : hits).map(([, , f]) => f.replace(/'/g, '́').toLowerCase()));
+      if (forms.size !== 1) return w;
+      let f = [...forms][0];
+      if (/ё/.test(f) || (f.match(LEX_V) || []).length < 2) f = f.replace(/́/g, '');
+      if (lexKey(f) !== lexKey(w)) return w;
+      let out = '', j = 0;
+      for (const ch of f) { if (ch === '́') { out += ch; continue; } const o = w[j++] || ch; out += o !== o.toLowerCase() ? ch.toUpperCase() : ch; }
+      return out;
+    };
+    return String(s).replace(/[А-Яа-яЁё́]+(?:-[А-Яа-яЁё́]+)*/g, (w) => (/́/.test(w) ? w : w.split('-').map(one).join('-')));
+  },
 };
+const LEX_V = /[аеёиоуыэюя]/gi;
+const LEX_PRON = { 'я': ['presfut_sg1', 'past_m', 'past_f'], 'ты': ['presfut_sg2', 'past_m', 'past_f', 'imperative_sg'], 'он': ['presfut_sg3', 'past_m'], 'она': ['presfut_sg3', 'past_f'], 'оно': ['presfut_sg3', 'past_n'], 'мы': ['presfut_pl1', 'past_pl', 'imperative_pl'], 'вы': ['presfut_pl2', 'past_pl', 'imperative_pl'], 'они': ['presfut_pl3', 'past_pl'] };
+const LEX_SKIP = new Set('не тоже уже еще очень часто всегда сейчас сегодня здесь там тут так вчера завтра потом иногда обычно давно снова опять только даже вот же ведь правда сначала теперь быстро медленно долго скоро много мало хорошо плохо вместе тогда никогда утром вечером днем ночью летом зимой весной осенью'.split(' '));
+const LEX_CASES = {
+  'в': ['acc', 'prep'], 'во': ['acc', 'prep'], 'на': ['acc', 'prep'], 'о': ['prep', 'acc'], 'об': ['prep', 'acc'], 'обо': ['prep'], 'при': ['prep'],
+  'с': ['gen', 'inst', 'acc'], 'со': ['gen', 'inst'], 'у': ['gen'], 'без': ['gen'], 'для': ['gen'], 'из': ['gen'], 'от': ['gen'], 'до': ['gen'], 'около': ['gen'], 'после': ['gen'], 'возле': ['gen'], 'мимо': ['gen'], 'вместо': ['gen'], 'кроме': ['gen'], 'из-за': ['gen'], 'среди': ['gen'], 'напротив': ['gen'],
+  'к': ['dat'], 'ко': ['dat'], 'по': ['dat', 'acc', 'prep'], 'за': ['acc', 'inst'], 'под': ['acc', 'inst'], 'над': ['inst'], 'перед': ['inst'], 'между': ['inst', 'gen'], 'про': ['acc'], 'через': ['acc'],
+};
+/* set phrases that keep an old case form: пойти в гости */
+const LEX_FIXED = new Set(['в гости']);
+const LEX_NUMS = new Set('два две три четыре оба обе полтора полторы'.split(' '));
+const LEX_IN = new Set('магазин школа кафе парк город театр кино ресторан офис университет библиотека музей аптека больница комната класс квартира деревня лес сад зоопарк бассейн цирк поликлиника институт гостиница отель супермаркет москва россия'.split(' '));
+const LEX_ON = new Set('почта работа рынок вокзал улица концерт урок стадион площадь остановка этаж балкон выставка экскурсия лекция пляж дача станция завод фабрика север юг восток запад'.split(' '));
+const LEX_DARK = new Set('убить убивать убийство убийца кровь смерть умереть умирать мертвый труп оружие пистолет ружье война жестокий драка драться ненавидеть бомба взрыв наркотик кокаин героин пьяный'.split(' '));
+/* nouns the course translates by idiom or by time of day ("сколько тебе лет" = how old are you): no meaning check for them */
+const LEX_IDIOM = new Set('привет свидание встреча год лет час урок центр телевизор температура ужин обед завтрак дело раз время пора минута неделя день утро вечер ночь сторона место вид'.split(' '));
+/* the dictionary has one word where a translation often has another: мама is "mom", the English line says "mother" */
+const LEX_EN_SYN = { mother: 'mom', mothers: 'mom', mum: 'mom', father: 'dad', fathers: 'dad', store: 'shop', stores: 'shop', shop: 'store', shops: 'store', movie: 'film', movies: 'film', film: 'movie', cinema: 'movie', apartment: 'flat', flat: 'apartment', kid: 'child', kids: 'child', children: 'child', hat: 'cap', hats: 'cap', cap: 'hat', caps: 'hat', photo: 'picture', supper: 'dinner', dinner: 'supper', guy: 'boy', auto: 'car' };
+const LEX_EN_STOP = new Set('a an the to of and or in on at for with by from is are be it its this that his her their my your our'.split(' '));
+const lexEnStems = (s) => String(s).toLowerCase().replace(/\([^)]*\)/g, ' ').split(/[^a-z]+/).filter((w) => w.length >= 3 && !LEX_EN_STOP.has(w)).map((w) => w.slice(0, Math.max(3, Math.min(5, w.length - 1))));
+const LEX_LAT = { а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ж: 'zh', з: 'z', и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch', ы: 'y', э: 'e', ю: 'yu', я: 'ya' };
+/* пельмени -> pelmeni, so a noun the English keeps in Russian still counts as translated */
+const lexTranslit = (k) => Array.from(k).map((c) => LEX_LAT[c] ?? '').join('');
+const LEX_ALLC = ['nom', 'gen', 'dat', 'acc', 'inst', 'prep'];
+/* noun reading -> [[gender or pl, case]]; ? marks a noun with no gender in the data */
+function lexNounGC(r) {
+  const g = /^[mfn]/.test(r.info) ? r.info[0] : '';
+  if (r.slot === 'lemma') return r.indecl ? LEX_ALLC.map((c) => [g || '?', c]).concat(LEX_ALLC.map((c) => ['pl', c])) : g ? [[g, 'nom']] : [];
+  const m = r.slot.match(/^(sg|pl)_(\w+)$/);
+  return !m ? [] : m[1] === 'pl' ? [['pl', m[2]]] : [[g || '?', m[2]]];
+}
+function lexAdjGC(r) { if (r.slot === 'lemma') return [['m', 'nom']]; const m = r.slot.match(/^decl_(\w+)_(\w+)$/); return m ? [[m[1], m[2]]] : []; }
 
 /* ---------- story quiz: 3 questions after each story ---------- */
 const Quiz = {
@@ -3445,7 +3580,7 @@ function writerFields() {
   $$('[data-w]').forEach((el) => { el.hidden = el.dataset.w !== k; });
   $('#wHelp').textContent = k === 'claude' ? 'Get a key at console.anthropic.com. This page sends it only to api.anthropic.com, and its security policy blocks every other address. By default the key lives in memory and is gone when you close the tab. Tick Remember to keep it on this computer. Tip: make a separate key with a spend limit for this. Needs internet.'
     : k === 'ollama' ? 'Install Ollama, run "ollama pull ' + ($('#wOllamaModel').value || 'qwen2.5:7b') + '", then start Ollama on this computer with OLLAMA_ORIGINS=* so this page can reach it. Works offline. Small models make more Russian mistakes than Claude.'
-    : k === 'mini' ? 'A local model runs right in this browser. Free and fully offline. The built-in Gemma 3 270M is tiny, so expect clumsy Russian. For better Russian, download a bigger GGUF model (for example Qwen2.5 1.5B Instruct, the q4_k_m file, about 1.1 GB) and pick it with "Use a bigger model file". It writes story episodes and word drills. Questions, docs and ratings need Claude or Ollama.'
+    : k === 'mini' ? 'A local model runs right in this browser. Free and fully offline. The built-in Gemma 3 270M is tiny, so expect clumsy Russian. For better Russian, download a bigger GGUF model (for example Qwen2.5 1.5B Instruct, the q4_k_m file, about 1.1 GB) and pick it with "Use a bigger model file". It writes story episodes and word drills, and a dictionary check drops lines with broken grammar before they go on air. Questions, docs and ratings need Claude or Ollama.'
     : 'No writer. The radio plays the built-in episodes, games, drills and reruns, fully offline.';
 }
 function saveWriter() {
@@ -3592,6 +3727,35 @@ const miniHead = () => (isA2() ? MINI_HEAD_A2 : MINI_HEAD);
 const MINI_CAFE = [L('N', 'Маша идёт в кафе.', 'Masha goes to a café.'), L('T', 'Она хочет кофе.', 'She wants coffee.'), L('N', 'Кофе, пожалуйста!', 'Coffee, please!'), L('T', 'Сколько стоит?', 'How much is it?'), L('N', 'Сто рублей.', 'One hundred rubles.'), L('T', 'Спасибо! Очень вкусно.', 'Thank you! Very tasty.'), L('N', 'А Борис дома. Он спит.', 'And Boris is at home. He is sleeping.')];
 const MINI_PAST = [L('N', 'Вчера Маша была в парке.', 'Yesterday Masha was in the park.'), L('T', 'Она гуляла с другом.', 'She walked with a friend.'), L('N', 'Потом они пошли в кафе.', 'Then they went to a café.'), L('T', 'Маша пила чай с лимоном.', 'Masha drank tea with lemon.'), L('N', 'А Борис спал дома на диване.', 'And Boris slept at home on the sofa.'), L('T', 'Вечером Маша купила рыбу.', 'In the evening Masha bought fish.'), L('N', 'Борис был очень рад!', 'Boris was very happy!')];
 const MINI_WORDS = 'Word: кошка | cat\nN: Кошка. | A cat.\nT: Это моя кошка. | This is my cat.\nN: Кошка спит. | The cat is sleeping.\nT: Кошка любит молоко. | The cat loves milk.\n###\n\nWord: кофе | coffee\nN: Кофе. | Coffee.\nT: Я пью кофе. | I drink coffee.\nN: Кофе горячий. | The coffee is hot.\nT: Ты хочешь кофе? | Do you want coffee?\n###\n\n';
+/* chat examples from course lessons 10 and 22, checked lines. They open every chat prompt, so the engine keeps them cached.
+   Mostly narration: an example full of "Маша говорит:" made Qwen write 7 of 10 lines that way */
+const MINI_EX = {
+  A1: { title: 'Мой день', words: 'утром, кафе', lines: [
+    ['N', 'Утром я пью чай.', 'In the morning I drink tea.'], ['T', 'А я утром пью кофе. Потом я завтракаю.', 'And in the morning I drink coffee. Then I have breakfast.'],
+    ['N', 'Маша тоже завтракает. Потом она идёт в университет.', 'Masha has breakfast too. Then she goes to the university.'], ['T', 'Днём Маша обедает в кафе.', 'In the afternoon Masha has lunch in a café.'],
+    ['N', 'А Борис обедает дома.', 'And Boris has lunch at home.'], ['T', 'Вечером Маша идёт домой.', 'In the evening Masha goes home.'],
+    ['N', 'Она ужинает и читает.', 'She has dinner and reads.'], ['T', 'А Борис?', 'And Boris?'],
+    ['N', 'Борис спит. Утром, днём и вечером.', 'Boris sleeps. In the morning, in the afternoon and in the evening.'], ['T', 'А ночью Борис играет!', 'And at night Boris plays!']] },
+  A2: { title: 'Где ты был?', words: 'рынок, бабушка', lines: [
+    ['N', 'Тёма, где ты был в субботу?', 'Tyoma, where were you on Saturday?'], ['T', 'В субботу я был на рынке.', 'On Saturday I was at the market.'],
+    ['N', 'А я ходила в кино.', 'And I went to the cinema.'], ['T', 'В субботу Маша ходила в магазин.', 'On Saturday Masha went to the shop.'],
+    ['N', 'Она купила хлеб, сыр и молоко.', 'She bought bread, cheese and milk.'], ['T', 'А в воскресенье она ездила к бабушке.', 'And on Sunday she went to see grandma.'],
+    ['N', 'Бабушка живёт в деревне. Это далеко.', 'Grandma lives in a village. It is far.'], ['T', 'Маша ехала два часа.', 'Masha traveled for two hours.'],
+    ['N', 'Бабушка была очень рада.', 'Grandma was very happy.'], ['T', 'А Борис никуда не ходил.', 'And Boris did not go anywhere.']] },
+};
+/* the grammar for chat replies: hosts take turns, Tyoma first, so the intro line by Nika and the outro by Tyoma keep the rhythm.
+   A line holds one or two sentences, like the examples ("Да, есть. Что ещё?") */
+const MINI_TEXT = (w) => '\nru ::= rs (" " rs)?\nrs ::= rw (" " rw){0,' + (w - 1) + '} [.!?]\nrw ::= [а-яА-ЯёЁ]+ [,:]?\nen ::= es (" " es)?\nes ::= ew (" " ew){0,' + (w + 3) + '} [.!?]\new ::= [A-Za-z\']+ [,:]?';
+const MINI_PAIRS = (pairs, w) => 'root ::= ' + Array(pairs).fill('pair').join(' ') + '\npair ::= "T: " ru " | " en "\\n" "N: " ru " | " en "\\n"' + MINI_TEXT(w);
+const MINI_STOP = new Set('the and a an of to in on at for with his her their its is are was were be been that this about story episode please some has have had will would can could should into from by it he she they we you me my your our them him us there here then than so very more most also only one two и в на с не что это он она они мы вы я ты а но по к у о из за как'.split(' '));
+/* the user's own words may be missing from the dictionary: then their stems pass the unknown-word check */
+const miniAllow = (words) => [].concat(...words.map((w) => lexKey(stripStress(w)).split(/[\s-]+/))).filter((k) => k.length >= 3).map((k) => (k.length > 4 ? k.slice(0, k.length - 2) : k));
+/* did the episode use a listener idea? Half its content words, roughly stemmed, show up in the lines */
+function miniIdeaUsed(idea, lines) {
+  const hay = ' ' + norm(lines.map((l) => stripStress(l.ru) + ' ' + l.en).join(' ')) + ' ';
+  const stems = norm(idea).split(' ').filter((w) => w.length >= 3 && !MINI_STOP.has(w)).map((w) => (w.length <= 4 ? w : w.slice(0, Math.max(4, w.length - 2))));
+  return !stems.length || stems.filter((s) => hay.includes(' ' + s)).length >= Math.max(1, Math.ceil(stems.length / 2));
+}
 const miniEp = (title, lines, words) => 'Episode: ' + stripStress(title) + '\n' + (words ? 'Words: ' + words + '\n' : '') +
   lines.filter((l) => l.lang !== 'en' && l.ru).slice(0, 12).map((l) => (l.who === 'T' ? 'T' : 'N') + ': ' + stripStress(l.ru) + ' | ' + l.en).join('\n') + '\n###\n\n';
 function miniLines(text, max, maxWords = 10) {
@@ -3601,7 +3765,8 @@ function miniLines(text, max, maxWords = 10) {
     if (/^(###|Episode\b|Word:)/.test(line)) break;
     const m = line.match(/^([NT])\s*:\s*(.+?)\s*\|\s*(.+?)\s*$/);
     if (!m) continue;
-    const who = m[1], ru = m[2].replace(/\s+/g, ' '), en = m[3].replace(/\s+/g, ' ');
+    const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+    const who = m[1], ru = cap(m[2].replace(/\s+/g, ' ')), en = cap(m[3].replace(/\s+/g, ' '));
     if (!/[Ѐ-ӿ]/.test(ru) || /[A-Za-z]{3,}/.test(ru.replace(/\bFM\b/g, ''))) continue;
     if (!/[A-Za-z]/.test(en) || /[Ѐ-ӿ]/.test(en)) continue;
     if (ru.length < 2 || ru.length > 110 || en.length > 160 || ru.split(' ').length > maxWords || en.split(' ').length > maxWords + 8) continue;
@@ -3638,7 +3803,7 @@ const ModelStore = {
   del() { return this.run('readwrite', (st) => st.delete('custom')); },
 };
 const MiniAI = {
-  state: 'off', progress: 0, error: '', wl: null, loading: null, gpu: false, q: Promise.resolve(), custom: null, modelName: 'Gemma 3 270M', gen: 0,
+  state: 'off', progress: 0, error: '', wl: null, loading: null, gpu: false, q: Promise.resolve(), custom: null, modelName: 'Gemma 3 270M', gen: 0, tries: {}, speed: null,
   ensure() {
     if (this.wl) return Promise.resolve(this.wl);
     const g = this.gen;
@@ -3710,6 +3875,7 @@ const MiniAI = {
       const wl = await this.ensure();
       if (opt.signal && opt.signal.aborted) throw { code: 'cancelled' };
       const res = await wl.createCompletion({ prompt, max_tokens: opt.max || 300, temperature: opt.temp || 0.7, top_p: 0.9, top_k: 30, min_p: 0.08, repeat_penalty: 1.1, stop: opt.stop || ['###'], grammar: opt.grammar, seed: Math.floor(Math.random() * 1e9), abortSignal: opt.signal });
+      this.speedNote(res);
       const c = res && res.choices && res.choices[0];
       return String((c && (c.text != null ? c.text : c.message && c.message.content)) || (typeof res === 'string' ? res : ''));
     });
@@ -3721,12 +3887,20 @@ const MiniAI = {
     const run = this.q.then(async () => {
       const wl = await this.ensure();
       if (opt.signal && opt.signal.aborted) throw { code: 'cancelled' };
-      const res = await wl.createChatCompletion({ messages, max_tokens: opt.max || 400, temperature: opt.temp || 0.7, top_p: 0.9, top_k: 40, min_p: 0.05, repeat_penalty: 1.08, grammar: opt.grammar, seed: Math.floor(Math.random() * 1e9), abortSignal: opt.signal });
+      const res = await wl.createChatCompletion({ messages, max_tokens: opt.max || 400, temperature: opt.temp || 0.7, top_p: 0.9, top_k: 40, min_p: 0.05, repeat_penalty: 1.05, grammar: opt.grammar, seed: Math.floor(Math.random() * 1e9), abortSignal: opt.signal });
+      this.speedNote(res);
       const c = res && res.choices && res.choices[0];
       return String((c && (c.message && c.message.content != null ? c.message.content : c.text)) || (typeof res === 'string' ? res : ''));
     });
     this.q = run.catch(() => {});
     return run;
+  },
+  /* llama.cpp timings: the prompt part the engine had cached, what it read new, how fast it wrote */
+  speedNote(res) {
+    const t = res && res.timings;
+    if (!t || !t.predicted_n) return;
+    this.speed = { cached: t.cache_n || 0, read: t.prompt_n || 0, readS: (t.prompt_ms || 0) / 1000, wrote: t.predicted_n, perS: t.predicted_per_second || 0 };
+    Dbg.info('Mini AI speed: read ' + this.speed.read + ' new prompt tokens' + (this.speed.cached ? ' (' + this.speed.cached + ' from cache)' : '') + ' in ' + Math.round(this.speed.readS) + ' s, wrote ' + t.predicted_n + ' tokens at ' + this.speed.perS.toFixed(1) + ' per second');
   },
   template() { try { return (this.wl && this.wl.getChatTemplate()) || null; } catch (e) { return null; } },
   useChat() {
@@ -3736,21 +3910,49 @@ const MiniAI = {
   },
   sys() {
     const a2 = isA2();
-    return 'You write Povtori FM, a radio show in ' + (a2 ? 'simple Russian for CEFR A2 learners: present and past tense, common cases' : 'very simple Russian for CEFR A1 beginners: present tense, common words') +
-      '. Two hosts talk: Nika (N, female, feminine forms) and Tyoma (T, male, masculine forms). Write only lines in this format, one per line:\nN: Russian sentence. | English translation.\nRules: ' + (a2 ? '4 to 11' : '2 to 8') +
-      ' words per Russian sentence, everyday words, correct grammar and endings, no stress marks, alternate the hosts, translate each line faithfully.';
+    return 'You write Povtori FM, a radio show in ' + (a2 ? 'simple Russian for CEFR A2 learners' : 'very simple Russian for CEFR A1 beginners') + '. Two hosts tell a story together: Nika (N) is a woman, Tyoma (T) is a man.\n' +
+      'Write only lines in this format, one per line:\nT: Russian sentence. | English translation.\nRules:\n- ' + (a2 ? '4 to 11 words per Russian sentence. Past, present and future tense.' : '2 to 8 words per Russian sentence. Present tense.') +
+      '\n- Only common everyday words, with correct grammar and case endings.\n- The hosts tell what happens, like a story on the radio. A little dialogue is fine.\n- Nika speaks of herself as a woman (я была), Tyoma as a man (я был).\n' +
+      '- A light, friendly story about everyday life: home, food, shops, cafés, friends, pets, weather, the city. No violence, crime or scary events.\n- The English is a close translation of the Russian.\n- No stress marks.';
+  },
+  /* system rules, then one example request and answer from the course. Every chat prompt at a level starts the same,
+     so the engine reuses its cache and reads only the new request: about 2 times faster from the second prompt on */
+  prefix() {
+    const ex = MINI_EX[isA2() ? 'A2' : 'A1'], tmpl = this.template() || '';
+    const ask = 'Write a short example episode. Use these words: ' + ex.words + '.';
+    const answer = 'Title: ' + ex.title + '\n' + ex.lines.map((l) => l[0] + ': ' + l[1] + ' | ' + l[2]).join('\n');
+    return /system/.test(tmpl) && !/system role not supported/i.test(tmpl)
+      ? [{ role: 'system', content: this.sys() }, { role: 'user', content: ask }, { role: 'assistant', content: answer }]
+      : [{ role: 'user', content: this.sys() + '\n\n' + ask }, { role: 'assistant', content: answer }];
+  },
+  exampleKeys() { return new Set(MINI_EX[isA2() ? 'A2' : 'A1'].lines.map((l) => norm(l[1]))); },
+  /* keeps lines that pass the dictionary check, with stress marks added. seen holds lines already used or copied from the example;
+     a line that repeats 3 or more words of a kept line with little new (Вечером Маша купила шапку / шапочку) counts as a copy */
+  vet(arr, seen, allow, drop, kept) {
+    const out = [], stems = (t) => new Set(norm(t).split(' ').filter((w) => w.length >= 3).map((w) => w.slice(0, 4)));
+    for (const l of arr) {
+      const k = norm(l.ru);
+      if (!k || seen.has(k)) continue;
+      seen.add(k);
+      const a = stems(l.ru);
+      if (kept.some((b) => { let n = 0; for (const x of a) if (b.has(x)) n++; return n >= 3 && n / (a.size + b.size - n) >= 0.6; })) { drop.push('near copy'); continue; }
+      const why = Lex.check(l.ru, l.who, allow, l.en);
+      if (why) { drop.push(why); continue; }
+      kept.push(a);
+      out.push(Object.assign({}, l, { ru: Lex.accent(l.ru) }));
+    }
+    return out;
   },
   async storyChat(p, words, signal) {
-    const st = DATA.story, recaps = allRecaps().slice(-4), a2 = isA2(), maxW = a2 ? 11 : 8, reqs = (st.requests || []).slice(0, 3);
-    const ex = (a2 ? MINI_PAST : MINI_CAFE).slice(0, 2).map((l) => l.who + ': ' + stripStress(l.ru) + ' | ' + l.en).join('\n');
-    const user = this.sys() + '\n\nStory premise: ' + st.premise + '\n' + (recaps.length ? 'Story so far:\n' + recaps.map((r) => 'Episode ' + r.n + ': ' + r.recap).join('\n') + '\n' : '') +
-      (reqs.length ? 'Listener ideas to use in this episode: ' + reqs.join('; ') + '\n' : '') + (words.length ? 'Use these words: ' + words.join(', ') + '\n' : '') +
-      '\nFormat example only. Do not reuse its title or its sentences:\nTitle: ' + (a2 ? 'Вчера в парке' : 'Маша в кафе') + '\n' + ex + '\n\nWrite episode ' + p.n + ' of the story with new events: first "Title:" with a new short Russian title, then 10 lines.';
-    const g = MINI_GRAMMAR(10, maxW).replace('root ::= ', 'root ::= "Title: " tw (" " tw){0,4} "\\n" ') + '\ntw ::= [а-яА-ЯёЁ]+';
-    const out = await this.chat([{ role: 'user', content: user }], { max: 760, grammar: g, signal, temp: 0.75 });
+    const st = DATA.story, recaps = allRecaps().slice(-4), maxW = isA2() ? 11 : 8, reqs = (st.requests || []).slice(0, 2);
+    const ask = 'Story premise: ' + st.premise + '\n' + (recaps.length ? 'Story so far:\n' + recaps.map((r) => 'Episode ' + r.n + ': ' + r.recap).join('\n') + '\n' : '') +
+      (reqs.length ? 'Listener idea, build this episode around it: ' + reqs.join('; ') + '\n' : '') + (words.length ? 'Use these words: ' + words.join(', ') + '\n' : '') +
+      'Write episode ' + p.n + ': first "Title:" with a new short Russian title, then 10 lines. One clear scene that follows from the story so far. Write new sentences, do not copy the example.';
+    const g = MINI_PAIRS(5, maxW).replace('root ::= ', 'root ::= "Title: " tw (" " tw){0,4} "\\n" ') + '\ntw ::= [а-яА-ЯёЁ]+';
+    const out = await this.chat(this.prefix().concat([{ role: 'user', content: ask }]), { max: 800, grammar: g, signal, temp: 0.65 });
     this.trace = (this.trace || []).concat([out]).slice(-8);
     const tm = out.match(/^Title:\s*([^\n]+)/m);
-    return { title: tm ? tm[1].trim().slice(0, 60) : '', lines: miniLines(out.replace(/^Title:[^\n]*\n/m, ''), 12, maxW + 2), consumed: reqs };
+    return { title: tm ? tm[1].trim().slice(0, 60) : '', lines: miniLines(out.replace(/^Title:[^\n]*\n/m, ''), 12, maxW + 2), reqs };
   },
   pickWords(max) {
     const mine = vocabOrder().filter((w) => isCyr(w.ru || w.term)).slice(0, max)
@@ -3769,55 +3971,63 @@ const MiniAI = {
   },
   async story(p, signal) {
     await this.ensure();
-    const a2 = isA2(), maxW = a2 ? 11 : 8;
-    const words = this.pickWords(2).map((w) => w.ru);
+    await Lex.load();
+    const a2 = isA2(), maxW = a2 ? 11 : 8, chat = this.useChat();
+    const words = this.pickWords(2).map((w) => w.ru), allow = miniAllow(words.filter((w) => !Lex.readings(w).length)), kept = [];
     let topic = words.length ? 'Маша и ' + words[0] : pick(['Новый день', 'Маша в городе', 'Борис дома', 'Маша и друг', 'Дождь']);
-    const lines = [], seen = new Set();
-    const keep = (arr) => arr.filter((l) => { const k = norm(l.ru); if (seen.has(k)) return false; seen.add(k); return true; });
-    let consumed = [], chat = false;
-    if (this.useChat()) {
-      chat = true;
+    const lines = [], seen = chat ? this.exampleKeys() : new Set(), drop = [];
+    let consumed = [];
+    if (chat) {
       const r = await this.storyChat(p, words, signal);
-      lines.push(...keep(r.lines)); consumed = r.consumed;
-      if (r.title) topic = r.title;
+      lines.push(...this.vet(r.lines, seen, allow, drop, kept));
+      /* an idea counts as used once its words show up; after 2 tries it goes anyway, so one hard idea cannot block the rest */
+      consumed = r.reqs.filter((q) => { this.tries[q] = (this.tries[q] || 0) + 1; return miniIdeaUsed(q, lines) || this.tries[q] >= 2; });
+      const bad = r.title ? Lex.check(r.title, 'N', allow) : 'no title';
+      if (bad) drop.push('title: ' + bad); else topic = r.title;
     } else {
       const prev = DATA.archive.find((a) => a.kind === 'story' && a.lines && a.lines.length);
       const cu = Course.lastDone();
       const prompt = miniHead() + (cu ? miniEp(cu.title.replace(/^.*?\.\s*/, ''), Course.lines(cu), cu.words.slice(0, 3).map((x) => stripStress(x[0])).join(', ')) : miniEp(OFF.ep1.title.replace(/^.*?\.\s*/, ''), OFF.ep1.lines, 'кот, молоко, рыба')) + (a2 ? miniEp('Вчера в парке', MINI_PAST, 'парк, чай') : miniEp('Маша в кафе', MINI_CAFE, 'кафе, кофе')) +
         (prev ? miniEp(String(prev.title || '').replace(/^.*?\.\s*/, ''), prev.lines) : '') + 'Episode: ' + topic + '\n' + (words.length ? 'Words: ' + words.join(', ') + '\n' : '');
       let text = '';
-      for (let round = 0; round < 2 && lines.length < 9; round++) {
+      for (let round = 0; round < 3 && lines.length < 9; round++) {
         const out = await this.complete(prompt + text, { max: 260, grammar: MINI_GRAMMAR(round ? 4 : 6, maxW), signal });
         this.trace = (this.trace || []).concat([out]).slice(-8);
-        const fresh = keep(miniLines(out, 10, maxW + 2));
-        if (!fresh.length) break;
-        lines.push(...fresh);
+        const got = miniLines(out, 10, maxW + 2);
+        if (!got.length) break;
+        lines.push(...this.vet(got, seen, allow, drop, kept));
         text += out.endsWith('\n') ? out : out + '\n';
       }
     }
-    Dbg.info('Mini AI episode ' + p.n + ': ' + lines.length + ' usable lines' + (chat ? ', chat format' : ', plain text') + (lines.length < 3 ? ', too few, skipped' : ''));
+    Dbg.info('Mini AI episode ' + p.n + ': ' + lines.length + ' usable lines' + (chat ? ', chat format' : ', plain text') + (drop.length ? ', ' + drop.length + ' dropped by the dictionary check (' + drop.slice(0, 4).join('; ') + ')' : '') + (consumed.length ? ', used the idea: ' + consumed.join('; ') : '') + (lines.length < 3 ? ', too few, skipped' : ''));
     if (lines.length < 3) return null;
     miniRepeats(lines);
     const all = [L('N', 'Но́вый эпизо́д!', 'New episode!'), ...lines, L('T', 'Слу́шай да́льше!', 'Keep listening!')];
     const heard = norm(lines.map((l) => l.ru).join(' '));
-    return { kind: 'story', title: 'Эпизо́д ' + p.n + '. ' + topic, lines: all, mini: true, chat, model: this.modelName, meta: { episode: p.n, storyId: p.storyId || DATA.story.id, recap: lines.slice(0, 3).map((l) => l.en).join(' '), newWords: [], used: words.filter((w) => hitsText({ term: w }, heard)), consumed } };
+    return { kind: 'story', title: 'Эпизо́д ' + p.n + '. ' + Lex.accent(topic), lines: all, mini: true, chat, model: this.modelName, meta: { episode: p.n, storyId: p.storyId || DATA.story.id, recap: lines.slice(0, 3).map((l) => l.en).join(' '), newWords: [], used: words.filter((w) => hitsText({ term: w }, heard)), consumed, dropped: drop.length } };
   },
   async words(signal) {
     await this.ensure();
+    await Lex.load();
     const ws = this.pickWords(3).filter((w) => w.en);
     if (!ws.length) return this.story({ n: nextEp(), storyId: DATA.story.id }, signal);
-    const maxW = isA2() ? 11 : 8, chat = this.useChat();
-    const lines = [L('N', 'Твои́ слова́! Слу́шай и повторя́й.', 'Your words! Listen and repeat.')];
+    const maxW = isA2() ? 11 : 8, chat = this.useChat(), seen = chat ? this.exampleKeys() : new Set(), drop = [];
+    const lines = [L('N', 'Твои́ слова́! Слу́шай и повторя́й.', 'Your words! Listen and repeat.')], kept = [];
     for (const w of ws) {
       const out = chat
-        ? await this.chat([{ role: 'user', content: this.sys() + '\n\nTeach the word "' + w.ru + '" (' + w.en + ') in 4 lines: first the word alone, then 3 short example sentences that use it.\n\nFormat example for another word:\nN: Кофе. | Coffee.\nT: Я пью кофе. | I drink coffee.\nN: Кофе горячий. | The coffee is hot.\nT: Ты хочешь кофе? | Do you want coffee?' }], { max: 260, grammar: MINI_GRAMMAR(4, maxW), signal })
+        ? await this.chat(this.prefix().concat([{ role: 'user', content: 'Teach the word "' + w.ru + '" (' + w.en + ') in 4 lines: first the word alone, then 3 short example sentences that use it. Write new sentences, do not copy the example.' }]), { max: 300, grammar: MINI_PAIRS(2, maxW), signal, temp: 0.6 })
         : await this.complete(miniHead() + MINI_WORDS + 'Word: ' + w.ru + ' | ' + w.en + '\n', { max: 120, grammar: MINI_GRAMMAR(3, maxW), signal });
-      const got = miniLines(out, 5, maxW + 2);
+      this.trace = (this.trace || []).concat([out]).slice(-8);
+      const allow = Lex.readings(w.ru).length ? null : miniAllow([w.ru]);
+      let got = this.vet(miniLines(out, 5, maxW + 2), seen, allow, drop, kept);
+      /* the tiny model is fast: one more try when the check left nothing for this word */
+      if (!got.length && !chat) got = this.vet(miniLines(await this.complete(miniHead() + MINI_WORDS + 'Word: ' + w.ru + ' | ' + w.en + '\n', { max: 120, grammar: MINI_GRAMMAR(3, maxW), signal }), 5, maxW + 2), seen, allow, drop, kept);
       if (got.length) { got[0].repeat = true; lines.push(...got); }
     }
+    Dbg.info('Mini AI drill: ' + (lines.length - 1) + ' usable lines for ' + ws.map((w) => w.ru).join(', ') + (drop.length ? ', ' + drop.length + ' dropped by the dictionary check (' + drop.slice(0, 4).join('; ') + ')' : ''));
     if (lines.length < 3) return null;
     lines.push(L('T', 'Молоде́ц!', 'Well done!'));
-    return { kind: 'words', title: 'Слова́: ' + ws.map((w) => w.ru).join(', '), lines, mini: true, model: this.modelName, meta: { used: ws.map((w) => w.term), gloss: [] } };
+    return { kind: 'words', title: 'Слова́: ' + ws.map((w) => Lex.accent(w.ru)).join(', '), lines, mini: true, model: this.modelName, meta: { used: ws.map((w) => w.term), gloss: [], dropped: drop.length } };
   },
 };
 
